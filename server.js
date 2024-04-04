@@ -55,10 +55,11 @@ app.use(cookieSession({
 // custom routes here
 
 const DB = process.env.USER;
-const WMDB = 'wmdb';
-const STAFF = 'staff';
+const GUESSPIONAGE = 'guesspionage';
+const QUESTIONS = 'questions';
+const USERS = 'users';
 
-// main page. This shows the use of session cookies
+// HOMEPAGE HERE
 app.get('/', (req, res) => {
     let uid = req.session.uid || 'unknown';
     let visits = req.session.visits || 0;
