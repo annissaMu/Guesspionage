@@ -5,8 +5,15 @@ h1 {
     font-size: 4em;
   }
 
+  h3 {
+    text-align: center;
+    color: rgb(117, 10, 114);
+    font-style: italic;
+    font-size: 2em;
+  }
+
 .container {
-    width: 250px;
+    width: 280px;
     height: 250px;
     border-radius: 50%; /* Make it a circle */
     background-color: rgb(18, 156, 156); /* Background color of the circle */
