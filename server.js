@@ -69,6 +69,72 @@ app.get('/', (req, res) => {
     return res.render('index.ejs', {uid, visits});
 });
 
+app.get('/game/', async (req, res) => {
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+    
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    console.log(questionsList);
+
+    return res.render('game.ejs', {questionsList});
+});
+
+app.get('/game/', async (req, res) => {
+    let answer1 = req.query.answer1;
+    let answer2 = req.query.answer2;
+    let answer3 = req.query.answer3;
+    let answer4 = req.query.answer4;
+    let answer5 = req.query.answer5;
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+    
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    if (!answer1) {
+        return res.render('game.ejs', {questionsList});  
+    } else {
+        console.log('redirected!');
+        return res.redirect('/result/', {questionsList, answer1, answer2, answer3, answer4, answer5})
+    }
+});
+
+app.get
+
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
 app.post('/set-uid/', (req, res) => {
@@ -112,13 +178,6 @@ app.get('/form/', (req, res) => {
 app.post('/form/', (req, res) => {
     console.log('post form');
     return res.render('form.ejs', {action: '/form/', data: req.body });
-});
-
-app.get('/staffList/', async (req, res) => {
-    const db = await Connection.open(mongoUri, WMDB);
-    let all = await db.collection(STAFF).find({}).sort({name: 1}).toArray();
-    console.log('len', all.length, 'first', all[0]);
-    return res.render('list.ejs', {listDescription: 'all staff', list: all});
 });
 
 // ================================================================
