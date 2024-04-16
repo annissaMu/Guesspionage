@@ -64,14 +64,20 @@ bcrypt = require ("bcrypt");
 const ROUNDS = 15;
 
 // HOMEPAGE HERE
-app.get('/', (req, res) => {
+/*app.get('/', (req, res) => {
     let uid = req.session.uid || 'unknown';
     let visits = req.session.visits || 0;
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
     return res.render('index.ejs', {uid, visits});
-});
+});*/
+
+app.get('/', async (req, res) => {
+  const db = await Connection.open(mongoUri, GUESSPIONAGE);
+  let questions = await db.collection(QUESTIONS).find().toArray();
+  return res.render('baseQs.ejs', {questions});
+})
 
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
