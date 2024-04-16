@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Guesspionage Login Page</title>
+    <!-- load local stylesheet (css) -->
+    <link rel="stylesheet" href="/styles.css" />
+    <!-- loading jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+
+  <h1>Guesspionage</h1>
+
+  <h2>Register:</h2>
+  <p>
+    <form action="/join" method="POST">
+      <label> Username
+        <input type="text" name="username" placeholder="og102">
+      </label>
+      <label> Password
+        <input type="text" name="password" placeholder="********">
+      </label>
+    <button type="submit">register</button>
+    </form>
+  </p>
+  <h2>Login:</h2>
+  <p>
+    <form action="/login" method="POST">
+      <label> Username
+        <input type="text" name="username" placeholder="og102">
+      </label>
+      <label> Password
+        <input type="text" name="password" placeholder="********">
+      </label>
+    <button type="submit">login</button>
+    </form>
+  </p>

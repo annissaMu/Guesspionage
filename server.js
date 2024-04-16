@@ -20,6 +20,7 @@ const multer = require('multer');
 
 const { Connection } = require('./connection');
 const cs304 = require('./cs304');
+const { question } = require('readline-sync');
 
 // Create and configure the app
 
@@ -58,6 +59,9 @@ const DB = process.env.USER;
 const GUESSPIONAGE = 'guesspionage';
 const QUESTIONS = 'questions';
 const USERS = 'users';
+const LOGINS = 'loginCredentials';
+bcrypt = require ("bcrypt");
+const ROUNDS = 15;
 
 // HOMEPAGE HERE
 app.get('/', (req, res) => {
@@ -66,12 +70,73 @@ app.get('/', (req, res) => {
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
-    return res.render('index.ejs', {uid, visits});
+    return res.render('home.ejs', {uid, visits});
 });
 
+app.get('/baseQs', async (req, res) => {
+  const db = await Connection.open(mongoUri, GUESSPIONAGE);
+  const questions = await db.collection(QUESTIONS).find({question}).toArray();
+  console.log(questions);
+  return res.render('baseQs.ejs', questions);
+})
+
+/*app.post("/register", async (req, res) => {
+    try {
+      const username = req.body.username;
+      const password = req.body.password;
+      const db = await Connection.open(mongoUri, GUESSPIONAGE);
+      var existingUser = await db.collection(LOGINS).findOne({username: username});
+      if (existingUser) {
+        req.flash('error', "Login already exists - please try logging in instead.");
+        return res.redirect('login.ejs')
+      }
+      const hash = await bcrypt.hash(password, ROUNDS);
+      await db.collection(LOGINS).insertOne({
+          username: username,
+          hash: hash
+      });
+      console.log('successfully joined', username, password, hash);
+      req.flash('info', 'successfully joined and logged in as ' + username);
+      req.session.username = username;
+      req.session.logged_in = true;
+      return res.redirect('home.ejs');
+    } catch (error) {
+      req.flash('error', `Form submission error: ${error}`);
+      return res.redirect('home.ejs')
+    }
+  });
+  
+  app.post("/login", async (req, res) => {
+    try {
+      const username = req.body.username;
+      const password = req.body.password;
+      const db = await Connection.open(mongoUri, GUESSPIONAGE);
+      var existingUser = await db.collection(LOGINS).findOne({username: username});
+      console.log('user', existingUser);
+      if (!existingUser) {
+        req.flash('error', "Username does not exist - try again.");
+       return res.redirect('login.ejs')
+      }
+      const match = await bcrypt.compare(password, existingUser.hash); 
+      console.log('match', match);
+      if (!match) {
+          req.flash('error', "Username or password incorrect - try again.");
+          return res.redirect('login.ejs')
+      }
+      req.flash('info', 'successfully logged in as ' + username);
+      req.session.username = username;
+      req.session.logged_in = true;
+      console.log('login as', username);
+      return res.redirect('home.ejs');
+    } catch (error) {
+      req.flash('error', `Form submission error: ${error}`);
+      return res.redirect('login.ejs')
+    }
+  });*/
+  
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
-app.post('/set-uid/', (req, res) => {
+/*app.post('/set-uid/', (req, res) => {
     console.log('in set-uid');
     req.session.uid = req.body.uid;
     req.session.logged_in = true;
@@ -119,7 +184,7 @@ app.get('/staffList/', async (req, res) => {
     let all = await db.collection(STAFF).find({}).sort({name: 1}).toArray();
     console.log('len', all.length, 'first', all[0]);
     return res.render('list.ejs', {listDescription: 'all staff', list: all});
-});
+});*/
 
 // ================================================================
 // postlude

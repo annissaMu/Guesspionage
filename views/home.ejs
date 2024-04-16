@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <title>Home Page</title>
 </head>
 <body>
@@ -16,13 +16,8 @@
     </div>
     <h3>To Start The Game Click The Button Below </h3>
 
-    <a href="login.html">
-        <button class="logout"></button>
-    </a> 
-    <form class="LOut" action="/logout" method="POST">
-        <label class="logout">
-        <a href="login.html">  
-        <input type="submit" value="Logout">
-        </a> 
-        </label>
-    </form>
+    <div class="logout-container">
+        <form class="LOut" action="/logout" method="POST"> 
+            <input type="submit" value="Logout">
+        </form>
+    </div>
