@@ -9,14 +9,12 @@
 {
 	question: 'has 8:30?',
 	percentage: 15,
-	submissions: 4,
-	userAnswered: ['am114', 'db109', 'fn101', 'sk106'],
+	submissions: 5,
+	userAnswered: ['am114', 'db109', 'fn101', 'sk106','lc106'],
 	usersPlayed: [],
-	readyForUse: false,
+	readyForUse: true,
 },
-],
-
-[{
+{
 	question: 'has swam in Lake Waban?',
 	percentage: 20,
 	submissions: 5,
@@ -70,20 +68,11 @@
 },
 
 {
-	question: 'have completed their PE requirement',
-	percentage: 22,
-	submissions: 9,
-	userAnswered: ['am114', 'db109', 'fk100', 'am145', 'zc104', 'tk105', 'sc116', 'fn101', 'sk106'],
-	usersPlayed: ['oo100'],
+	question: 'experiences stress?',
+	percentage: 100,
+	submissions: 7,
+	userAnswered: ['am114', 'db109', 'fk100', 'am145', 'zc104', 'tk105', 'sc116'],
+	usersPlayed: ['fn101', 'sk106'],
 	readyForUse: true,
 },
-
-{
-	question: 'live on Westside',
-	percentage: 22,
-	submissions: 9,
-	userAnswered: ['am114', 'db109', 'fk100', 'am145', 'zc104', 'tk105', 'sc116', 'fn101', 'sk106'],
-	usersPlayed: ['oo100'],
-	readyForUse: true,
-}
 ]

@@ -70,70 +70,9 @@ app.get('/', (req, res) => {
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
-    return res.render('home.ejs', {uid, visits});
+    return res.render('index.ejs', {uid, visits});
 });
 
-app.get('/baseQs', async (req, res) => {
-  const db = await Connection.open(mongoUri, GUESSPIONAGE);
-  const questions = await db.collection(QUESTIONS).find({question}).toArray();
-  console.log(questions);
-  return res.render('baseQs.ejs', questions);
-})
-
-/*app.post("/register", async (req, res) => {
-    try {
-      const username = req.body.username;
-      const password = req.body.password;
-      const db = await Connection.open(mongoUri, GUESSPIONAGE);
-      var existingUser = await db.collection(LOGINS).findOne({username: username});
-      if (existingUser) {
-        req.flash('error', "Login already exists - please try logging in instead.");
-        return res.redirect('login.ejs')
-      }
-      const hash = await bcrypt.hash(password, ROUNDS);
-      await db.collection(LOGINS).insertOne({
-          username: username,
-          hash: hash
-      });
-      console.log('successfully joined', username, password, hash);
-      req.flash('info', 'successfully joined and logged in as ' + username);
-      req.session.username = username;
-      req.session.logged_in = true;
-      return res.redirect('home.ejs');
-    } catch (error) {
-      req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('home.ejs')
-    }
-  });
-  
-  app.post("/login", async (req, res) => {
-    try {
-      const username = req.body.username;
-      const password = req.body.password;
-      const db = await Connection.open(mongoUri, GUESSPIONAGE);
-      var existingUser = await db.collection(LOGINS).findOne({username: username});
-      console.log('user', existingUser);
-      if (!existingUser) {
-        req.flash('error', "Username does not exist - try again.");
-       return res.redirect('login.ejs')
-      }
-      const match = await bcrypt.compare(password, existingUser.hash); 
-      console.log('match', match);
-      if (!match) {
-          req.flash('error', "Username or password incorrect - try again.");
-          return res.redirect('login.ejs')
-      }
-      req.flash('info', 'successfully logged in as ' + username);
-      req.session.username = username;
-      req.session.logged_in = true;
-      console.log('login as', username);
-      return res.redirect('home.ejs');
-    } catch (error) {
-      req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('login.ejs')
-    }
-  });*/
-  
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
 /*app.post('/set-uid/', (req, res) => {
@@ -164,7 +103,73 @@ app.post('/logout/', (req, res) => {
     req.session.uid = false;
     req.session.logged_in = false;
     res.redirect('/');
+});*/
+
+app.get('/game/', async (req, res) => {
+  const db = await Connection.open(mongoUri, 'guesspionage');
+  let questions = await db.collection('questions').find().toArray();
+  let questionsList = [];
+  let questionsCounter = 0;
+  let indexList = [];
+  while (questionsCounter < 5) {
+      // keep track of unique indexes
+      while (indexList.length == questionsCounter){
+          let index = Math.floor(Math.random() * questions.length);
+          if (!indexList.includes(index)){
+              indexList.push(index);
+          }
+      }
+  
+      // push ready for use questions into questions list
+      if (questions[indexList[questionsCounter]].readyForUse == true) {
+          questionsList.push(questions[indexList[questionsCounter]]);
+          questionsCounter++;
+      } else {
+          indexList.pop();
+      }
+  }
+  console.log(questionsList);
+
+  return res.render('game.ejs', {questionsList});
 });
+
+app.get('/game/', async (req, res) => {
+  let answer1 = req.query.answer1;
+  let answer2 = req.query.answer2;
+  let answer3 = req.query.answer3;
+  let answer4 = req.query.answer4;
+  let answer5 = req.query.answer5;
+  const db = await Connection.open(mongoUri, 'guesspionage');
+  let questions = await db.collection('questions').find().toArray();
+  let questionsList = [];
+  let questionsCounter = 0;
+  let indexList = [];
+  while (questionsCounter < 5) {
+      // keep track of unique indexes
+      while (indexList.length == questionsCounter){
+          let index = Math.floor(Math.random() * questions.length);
+          if (!indexList.includes(index)){
+              indexList.push(index);
+          }
+      }
+  
+      // push ready for use questions into questions list
+      if (questions[indexList[questionsCounter]].readyForUse == true) {
+          questionsList.push(questions[indexList[questionsCounter]]);
+          questionsCounter++;
+      } else {
+          indexList.pop();
+      }
+  }
+  if (!answer1) {
+      return res.render('game.ejs', {questionsList});  
+  } else {
+      console.log('redirected!');
+      return res.redirect('/result/', {questionsList, answer1, answer2, answer3, answer4, answer5})
+  }
+});
+
+app.get
 
 // two kinds of forms (GET and POST), both of which are pre-filled with data
 // from previous request, including a SELECT menu. Everything but radio buttons
@@ -184,7 +189,7 @@ app.get('/staffList/', async (req, res) => {
     let all = await db.collection(STAFF).find({}).sort({name: 1}).toArray();
     console.log('len', all.length, 'first', all[0]);
     return res.render('list.ejs', {listDescription: 'all staff', list: all});
-});*/
+});
 
 // ================================================================
 // postlude
