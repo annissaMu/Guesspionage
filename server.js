@@ -70,39 +70,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/game/', async (req, res) => {
-    const db = await Connection.open(mongoUri, 'guesspionage');
-    let questions = await db.collection('questions').find().toArray();
-    let questionsList = [];
-    let questionsCounter = 0;
-    let indexList = [];
-    while (questionsCounter < 5) {
-        // keep track of unique indexes
-        while (indexList.length == questionsCounter){
-            let index = Math.floor(Math.random() * questions.length);
-            if (!indexList.includes(index)){
-                indexList.push(index);
-            }
-        }
-    
-        // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true) {
-            questionsList.push(questions[indexList[questionsCounter]]);
-            questionsCounter++;
-        } else {
-            indexList.pop();
-        }
-    }
-    console.log(questionsList);
-
-    return res.render('game.ejs', {questionsList});
-});
-
-app.get('/game/', async (req, res) => {
     let answer1 = req.query.answer1;
     let answer2 = req.query.answer2;
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
     let answer5 = req.query.answer5;
+    console.log(answer1);
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -125,15 +98,18 @@ app.get('/game/', async (req, res) => {
             indexList.pop();
         }
     }
+    // if there's no submission render game, else render the game results
     if (!answer1) {
         return res.render('game.ejs', {questionsList});  
     } else {
-        console.log('redirected!');
-        return res.redirect('/result/', {questionsList, answer1, answer2, answer3, answer4, answer5})
+        // do score calculation here!
+        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5})
     }
 });
 
-app.get
+app.post('/results/', async (req, res) => {
+    // update leaderboard, display spot on leaderboard (ignoring users)
+})
 
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
