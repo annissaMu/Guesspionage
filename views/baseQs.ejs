@@ -9,7 +9,15 @@
 </head>
 <body>
     <h1>Guesspionage</h1>
-
-    <% questions.forEach(question => {%>
-        <p><%= question %></p>
-        <% }) %>
+    <p>Do you...</p>
+    <ol>
+        <% questions.forEach(question => {%>
+            <form>
+                <li><%= question.question %></li>
+                <label><input type="radio" name="yesNo" value="Yes">Yes </label>
+                <label><input type="radio" name="yesNo" value="No">No</label>
+                <p></p>
+            </form>
+            <% }) %>
+    </ol>
+        
