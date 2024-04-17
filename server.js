@@ -93,7 +93,7 @@ app.get('/game/', async (req, res) => {
                 indexList.push(index);
             }
         }
-    
+
         // push ready for use questions into questions list
         if (questions[indexList[questionsCounter]].readyForUse == true) {
             questionsList.push(questions[indexList[questionsCounter]]);
