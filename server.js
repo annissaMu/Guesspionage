@@ -73,13 +73,33 @@ app.get('/', (req, res) => {
     return res.render('home.ejs', {uid, visits});
 });
 
+/*
+app.get('/', (req, res) => {
+    return res.redirect('/');
+})
+*/
+
+//why do some have a double escape?
+app.get('/baseQs/', async (req, res) => {
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    //we will add a filter on how many submissions each question has
+    const questions = await db.collection(QUESTIONS).find().toArray();
+    return res.render('baseQs.ejs', {questions});
+})
+
+app.post('/baseQs/', async (req, res) => {
+    let answer1 = req.query.yesAndNo0;
+  // update database here
+  console.log('posted');
+  res.redirect('/game/');
+})
+
 app.get('/game/', async (req, res) => {
     let answer1 = req.query.answer1;
     let answer2 = req.query.answer2;
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
     let answer5 = req.query.answer5;
-    console.log(answer1);
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -111,9 +131,11 @@ app.get('/game/', async (req, res) => {
     }
 });
 
-app.post('/results/', async (req, res) => {
+/*app.post('/results/', async (req, res) => {
     // update leaderboard, display spot on leaderboard (ignoring users)
 })
+    return res.render('index.ejs', {uid, visits});
+});*/
 
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 

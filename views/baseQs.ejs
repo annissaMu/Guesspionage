@@ -4,12 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <title>Base Questions</title>
 </head>
 <body>
     <h1>Guesspionage</h1>
+    <p>To start the game, answer the following questions first</p>
+    <p>Do you...</p>
+    <form method="post" action="/baseQs/" id="baseQs">
+        <ol>
+            <% questions.forEach((question, index) => {%>
+                <% const name = "yesAndNo" + index %>
+                <li><%= question.question %></li>
+                <label><input type="radio" name="<%= name %>" value="Yes" required= "required">Yes </label>
+                <label><input type="radio" name="<%= name %>" value="No" required="required">No</label>
+                <p></p>
+            <% }) %>
+        </ol>
+        <p><button type="submit" value="base">Start Game</button></p>
+    </form>
 
-    <% questions.forEach(question => {%>
-        <p><%= question %></p>
-        <% }) %>
+        
