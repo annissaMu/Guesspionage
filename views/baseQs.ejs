@@ -11,17 +11,17 @@
     <h1>Guesspionage</h1>
     <p>To start the game, answer the following questions first</p>
     <p>Do you...</p>
-    <ol>
-        <% questions.forEach(question => {%>
-            <form method="post" action="/game/" id="baseQs">
+    <form method="post" action="/baseQs/" id="baseQs">
+        <ol>
+            <% questions.forEach((question, index) => {%>
+                <% const name = "yesAndNo" + index %>
                 <li><%= question.question %></li>
-                <label><input type="radio" name="yesNo" value="Yes" required= "required">Yes </label>
-                <label><input type="radio" name="yesNo" value="No" required="required">No</label>
+                <label><input type="radio" name="<%= name %>" value="Yes" required= "required">Yes </label>
+                <label><input type="radio" name="<%= name %>" value="No" required="required">No</label>
                 <p></p>
-            </form>
             <% }) %>
-    </ol>
-    <form method="post" action="/game/" id="submitBase">
+        </ol>
         <p><button type="submit" value="base">Start Game</button></p>
     </form>
+
         
