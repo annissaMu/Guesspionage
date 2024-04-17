@@ -18,6 +18,14 @@
 
     <div class="logout-container">
         <form class="LOut" action="/logout" method="POST"> 
-            <input type="submit" value="Logout">
+            <button type="submit" value="Logout" class="logout" data-target="/baseQs.ejs"></button>
         </form>
     </div>
+
+    <script>
+    $('.logout').on('click', function(event) {
+        event.preventDefault(); 
+        const url = $(this).data('target');
+        location.replace(url);
+    });
+    </script>

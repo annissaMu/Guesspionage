@@ -64,20 +64,76 @@ bcrypt = require ("bcrypt");
 const ROUNDS = 15;
 
 // HOMEPAGE HERE
-/*app.get('/', (req, res) => {
+app.get('/', (req, res) => {
     let uid = req.session.uid || 'unknown';
     let visits = req.session.visits || 0;
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
+    return res.render('home.ejs', {uid, visits});
+});
+
+app.get('/', (req, res) => {
+    return res.redirect('/base');
+})
+
+//why do some have a double escape?
+app.get('/base', async (req, res) => {
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    //we will add a filter on how many submissions each question has
+    const questions = await db.collection(QUESTIONS).find().toArray();
+    return res.render('baseQs.ejs', {questions});
+})
+
+app.post('/game/', async (req, res) => {
+  const db = await Connection.open(mongoUri, GUESSPIONAGE);
+  const questionsList = await db.collection(QUESTIONS).find().toArray();
+  return res.render('game.ejs', {questionsList});
+})
+
+/*app.get('/game/', async (req, res) => {
+    let answer1 = req.query.answer1;
+    let answer2 = req.query.answer2;
+    let answer3 = req.query.answer3;
+    let answer4 = req.query.answer4;
+    let answer5 = req.query.answer5;
+    console.log(answer1);
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+    
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    // if there's no submission render game, else render the game results
+    if (!answer1) {
+        return res.render('game.ejs', {questionsList});  
+    } else {
+        // do score calculation here!
+        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5})
+    }
+});
+
+/*app.post('/results/', async (req, res) => {
+    // update leaderboard, display spot on leaderboard (ignoring users)
+})
     return res.render('index.ejs', {uid, visits});
 });*/
-
-app.get('/', async (req, res) => {
-  const db = await Connection.open(mongoUri, GUESSPIONAGE);
-  let questions = await db.collection(QUESTIONS).find().toArray();
-  return res.render('baseQs.ejs', {questions});
-})
 
 // shows how logins might work by setting a value in the session
 // This is a conventional, non-Ajax, login, so it redirects to main page 
@@ -110,72 +166,6 @@ app.post('/logout/', (req, res) => {
     req.session.logged_in = false;
     res.redirect('/');
 });*/
-
-app.get('/game/', async (req, res) => {
-  const db = await Connection.open(mongoUri, 'guesspionage');
-  let questions = await db.collection('questions').find().toArray();
-  let questionsList = [];
-  let questionsCounter = 0;
-  let indexList = [];
-  while (questionsCounter < 5) {
-      // keep track of unique indexes
-      while (indexList.length == questionsCounter){
-          let index = Math.floor(Math.random() * questions.length);
-          if (!indexList.includes(index)){
-              indexList.push(index);
-          }
-      }
-  
-      // push ready for use questions into questions list
-      if (questions[indexList[questionsCounter]].readyForUse == true) {
-          questionsList.push(questions[indexList[questionsCounter]]);
-          questionsCounter++;
-      } else {
-          indexList.pop();
-      }
-  }
-  console.log(questionsList);
-
-  return res.render('game.ejs', {questionsList});
-});
-
-app.get('/game/', async (req, res) => {
-  let answer1 = req.query.answer1;
-  let answer2 = req.query.answer2;
-  let answer3 = req.query.answer3;
-  let answer4 = req.query.answer4;
-  let answer5 = req.query.answer5;
-  const db = await Connection.open(mongoUri, 'guesspionage');
-  let questions = await db.collection('questions').find().toArray();
-  let questionsList = [];
-  let questionsCounter = 0;
-  let indexList = [];
-  while (questionsCounter < 5) {
-      // keep track of unique indexes
-      while (indexList.length == questionsCounter){
-          let index = Math.floor(Math.random() * questions.length);
-          if (!indexList.includes(index)){
-              indexList.push(index);
-          }
-      }
-  
-      // push ready for use questions into questions list
-      if (questions[indexList[questionsCounter]].readyForUse == true) {
-          questionsList.push(questions[indexList[questionsCounter]]);
-          questionsCounter++;
-      } else {
-          indexList.pop();
-      }
-  }
-  if (!answer1) {
-      return res.render('game.ejs', {questionsList});  
-  } else {
-      console.log('redirected!');
-      return res.redirect('/result/', {questionsList, answer1, answer2, answer3, answer4, answer5})
-  }
-});
-
-app.get
 
 // two kinds of forms (GET and POST), both of which are pre-filled with data
 // from previous request, including a SELECT menu. Everything but radio buttons
