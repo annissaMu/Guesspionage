@@ -88,7 +88,10 @@ app.get('/baseQs/', async (req, res) => {
 })
 
 app.post('/baseQs/', async (req, res) => {
-    let answer1 = req.query.yesAndNo0;
+  let id1 = req.query.id1;
+  let answer1 = req.query.yesAndNo1;
+  console.log(id1);
+  console.log(answer1);
   // update database here
   console.log('posted');
   res.redirect('/game/');
