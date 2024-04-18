@@ -83,12 +83,20 @@ app.get('/', (req, res) => {
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //we will add a filter on how many submissions each question has
-    const questions = await db.collection(QUESTIONS).find().toArray();
+    const questionsList = await db.collection(QUESTIONS).find().toArray();
+    let questions = [];
+    let i = 0;
+    while (questions.length!=5 && i<questionsList.length) {
+        if (questionsList[0].readyForUse == false) {
+            questions.push(questionsList[0]);
+        }
+        i++;
+    }
     return res.render('baseQs.ejs', {questions});
 })
 
 app.post('/baseQs/', async (req, res) => {
-  let id1 = req.query.id1;
+  let id1 = req.query.id1; // this is not working i don't know how exactly to do this still
   let answer1 = req.query.yesAndNo1;
   console.log(id1);
   console.log(answer1);
@@ -103,6 +111,7 @@ app.get('/game/', async (req, res) => {
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
     let answer5 = req.query.answer5;
+    let answers = [answer1, answer2, answer3, answer4, answer5];
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -129,8 +138,14 @@ app.get('/game/', async (req, res) => {
     if (!answer1) {
         return res.render('game.ejs', {questionsList});  
     } else {
-        // do score calculation here!
-        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5})
+        let score = 500;
+        let difference;
+        questionsList.forEach((question, index) => {
+            difference = Math.abs(question.percentage - answers[index]);
+            score -= difference;
+        })
+        // update leaderboard, update high score for user
+        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5, score})
     }
 });
 
@@ -200,26 +215,6 @@ app.post('/logout/', (req, res) => {
     req.session.logged_in = false;
     res.redirect('/');
 });*/
-
-// two kinds of forms (GET and POST), both of which are pre-filled with data
-// from previous request, including a SELECT menu. Everything but radio buttons
-
-app.get('/form/', (req, res) => {
-    console.log('get form');
-    return res.render('form.ejs', {action: '/form/', data: req.query });
-});
-
-app.post('/form/', (req, res) => {
-    console.log('post form');
-    return res.render('form.ejs', {action: '/form/', data: req.body });
-});
-
-app.get('/staffList/', async (req, res) => {
-    const db = await Connection.open(mongoUri, WMDB);
-    let all = await db.collection(STAFF).find({}).sort({name: 1}).toArray();
-    console.log('len', all.length, 'first', all[0]);
-    return res.render('list.ejs', {listDescription: 'all staff', list: all});
-});
 
 // ================================================================
 // postlude

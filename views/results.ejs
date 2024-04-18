@@ -14,11 +14,12 @@
         <% for (let i = 0; i < questionsList.length; i++) { %>
             <li>
                 <strong>Question:</strong> <%= questionsList[i].question %><br>
-                <strong>User's Answer:</strong> <%= eval("answer" + (i+1)) %><br>
-                <strong>Correct Answer:</strong><%= questionsList[i].answer %>
+                <strong>User's Answer:</strong> <%= eval("answer" + (i+1)) %>%<br>
+                <strong>Correct Answer:</strong><%= questionsList[i].percentage %>%
             </li>
         <% } %>
     </ul>
+    <h2>Final Score: <%= score %>/500</h2>
 
 </body>
 </html>
