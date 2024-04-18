@@ -134,6 +134,35 @@ app.get('/game/', async (req, res) => {
     }
 });
 
+app.post('/results/', async (req, res) => {
+    let { answer1, answer2, answer3, answer4, answer5 } = req.body;
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    // Render the results page with questions and answers
+    return res.render('results.ejs', { questionsList, answer1, answer2, answer3, answer4, answer5 });
+});
+
+
 /*app.post('/results/', async (req, res) => {
     // update leaderboard, display spot on leaderboard (ignoring users)
 })
