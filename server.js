@@ -70,14 +70,96 @@ app.get('/', (req, res) => {
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
-    return res.render('home.ejs', {uid, visits});
+    return res.render('login.ejs', {uid, visits});
 });
 
-/*
-app.get('/', (req, res) => {
-    return res.redirect('/');
-})
-*/
+app.post("/register", async (req, res) => {
+    try {
+      const username = req.body.username;
+      const password = req.body.password;
+      const db = await Connection.open(mongoUri, GUESSPIONAGE);
+      const existingUser = await db.collection(LOGINS).findOne({username: username});
+      if (existingUser) {
+        req.flash('error', "Login already exists - please try logging in instead.");
+        return res.redirect('/')
+      }
+      const hash = await bcrypt.hash(password, ROUNDS);
+      await db.collection(USERS).insertOne({
+          username: username,
+          hash: hash
+      });
+      console.log('successfully joined', username, password, hash);
+      req.flash('info', 'successfully joined and logged in as ' + username);
+      req.session.username = username;
+      req.session.logged_in = true;
+      return res.redirect('/home/');
+    } catch (error) {
+      req.flash('error', `Form submission error: ${error}`);
+      return res.redirect('/')
+    }
+  });
+
+  app.post("/login", async (req, res) => {
+    try {
+      const username = req.body.username;
+      const password = req.body.password;
+      const db = await Connection.open(mongoUri, GUESSPIONAGE);
+      const existingUser = await db.collection(USERS).findOne({username: username});
+      console.log('user', existingUser);
+      if (!existingUser) {
+        req.flash('error', "Username does not exist - try again.");
+       return res.redirect('/')
+      }
+      const match = await bcrypt.compare(password, existingUser.hash); 
+      console.log('match', match);
+      if (!match) {
+          req.flash('error', "Username or password incorrect - try again.");
+          return res.redirect('/')
+      }
+      req.flash('info', 'successfully logged in as ' + username);
+      req.session.username = username;
+      req.session.logged_in = true;
+      console.log('login as', username);
+      return res.redirect('/home');
+    } catch (error) {
+      req.flash('error', `Form submission error: ${error}`);
+      return res.redirect('/')
+    }
+  });
+  
+  
+
+// shows how logins might work by setting a value in the session
+// This is a conventional, non-Ajax, login, so it redirects to main page 
+/*app.post('/set-uid/', (req, res) => {
+    console.log('in set-uid');
+    req.session.uid = req.body.uid;
+    req.session.logged_in = true;
+    res.redirect('/');
+});
+
+// shows how logins might work via Ajax
+app.post('/set-uid-ajax/', (req, res) => {
+    console.log(Object.keys(req.body));
+    console.log(req.body);
+    let uid = req.body.uid;
+    if(!uid) {
+        res.send({error: 'no uid'}, 400);
+        return;
+    }
+    req.session.uid = req.body.uid;
+    req.session.logged_in = true;
+    console.log('logged in via ajax as ', req.body.uid);
+    res.send({error: false});
+});
+
+// conventional non-Ajax logout, so redirects
+app.post('/logout/', (req, res) => {
+    console.log('in logout');
+    req.session.uid = false;
+    req.session.logged_in = false;
+    res.redirect('/');
+});*/
 
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
@@ -137,37 +219,8 @@ app.get('/game/', async (req, res) => {
     return res.render('index.ejs', {uid, visits});
 });*/
 
-// shows how logins might work by setting a value in the session
-// This is a conventional, non-Ajax, login, so it redirects to main page 
-/*app.post('/set-uid/', (req, res) => {
-    console.log('in set-uid');
-    req.session.uid = req.body.uid;
-    req.session.logged_in = true;
-    res.redirect('/');
-});
 
-// shows how logins might work via Ajax
-app.post('/set-uid-ajax/', (req, res) => {
-    console.log(Object.keys(req.body));
-    console.log(req.body);
-    let uid = req.body.uid;
-    if(!uid) {
-        res.send({error: 'no uid'}, 400);
-        return;
-    }
-    req.session.uid = req.body.uid;
-    req.session.logged_in = true;
-    console.log('logged in via ajax as ', req.body.uid);
-    res.send({error: false});
-});
 
-// conventional non-Ajax logout, so redirects
-app.post('/logout/', (req, res) => {
-    console.log('in logout');
-    req.session.uid = false;
-    req.session.logged_in = false;
-    res.redirect('/');
-});*/
 
 // two kinds of forms (GET and POST), both of which are pre-filled with data
 // from previous request, including a SELECT menu. Everything but radio buttons
