@@ -19,14 +19,11 @@
                 <li><%= question.question %></li>
                 <label><input type="radio" name="<%= name %>" value="Yes" required= "required">Yes </label>
                 <label><input type="radio" name="<%= name %>" value="No" required="required">No</label>
-                <input type="radio" name="<%= hiddenName %>" value="<%= question.id %>" checked="checked" />
+                <label><input type="hidden" name="<%= hiddenName %>" value="<%= question.id %>"></label>
                 <p></p>
             <% }) %>
         </ol>
-        <p><button class="hidden" type="submit" value="base">Start Game</button></p>
+        <p><button  type="submit" value="base">Start Game</button></p>
     </form>
-    <style>
-        .hidden { display: none; }
-    </style>
 
         

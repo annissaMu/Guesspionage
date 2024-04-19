@@ -87,8 +87,8 @@ app.get('/baseQs/', async (req, res) => {
     let questions = [];
     let i = 0;
     while (questions.length!=5 && i<questionsList.length) {
-        if (questionsList[0].readyForUse == false) {
-            questions.push(questionsList[0]);
+        if (questionsList[i].readyForUse == false) {
+            questions.push(questionsList[i]);
         }
         i++;
     }
@@ -96,11 +96,46 @@ app.get('/baseQs/', async (req, res) => {
 })
 
 app.post('/baseQs/', async (req, res) => {
-  let id1 = req.query.id1; // this is not working i don't know how exactly to do this still
-  let answer1 = req.query.yesAndNo1;
+  let id0 = req.body.id0;
+  let id1 = req.body.id1;
+  let id2 = req.body.id2;
+  let id3 = req.body.id3;
+  let id4 = req.body.id4;
+  console.log(id4);
+  let idList = [id0, id1, id2, id3, id4];
+  let answer0 = req.body.yesAndNo0;
+  let answer1 = req.body.yesAndNo1;
+  let answer2 = req.body.yesAndNo2;
+  let answer3 = req.body.yesAndNo3;
+  let answer4 = req.body.yesAndNo4;
+  let answerList = [answer0, answer1, answer2, answer3, answer4];
   console.log(id1);
   console.log(answer1);
-  // update database here
+  const db = await Connection.open(mongoUri, GUESSPIONAGE);
+  // update yes no counters here
+  let question;
+  let yes;
+  let no;
+  let newPercent;
+  answerList.forEach(async (answer, index) => {
+    if (idList[index]) {
+        if (answer == "Yes") {
+            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {yes: 1}})
+        }
+        else if (answer == "No"){
+            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {no: 1}})
+        } 
+        // update percentage here
+        question = await db.collection(QUESTIONS).find({id: parseInt(idList[index])}, {yes: 1, no: 1}).toArray();
+        yes = question[0].yes;
+        console.log("at second", yes);
+        no = question[0].no;
+        newPercent = Math.floor(yes/(yes+no) * 100);
+        console.log(newPercent);
+        db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
+        // update submission count and ready for Use
+    }
+  })
   console.log('posted');
   res.redirect('/game/');
 })
@@ -144,6 +179,7 @@ app.get('/game/', async (req, res) => {
             difference = Math.abs(question.percentage - answers[index]);
             score -= difference;
         })
+        score = Math.floor((score/500) * 100);
         // update leaderboard, update high score for user
         return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5, score})
     }
