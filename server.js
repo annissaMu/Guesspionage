@@ -165,13 +165,59 @@ app.post('/logout/', (req, res) => {
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //we will add a filter on how many submissions each question has
-    const questions = await db.collection(QUESTIONS).find().toArray();
+    const questionsList = await db.collection(QUESTIONS).find().toArray();
+    let questions = [];
+    let i = 0;
+    while (questions.length!=5 && i<questionsList.length) {
+        if (questionsList[i].readyForUse == false) {
+            questions.push(questionsList[i]);
+        }
+        i++;
+    }
     return res.render('baseQs.ejs', {questions});
 })
 
 app.post('/baseQs/', async (req, res) => {
-    let answer1 = req.query.yesAndNo0;
-  // update database here
+  let id0 = req.body.id0;
+  let id1 = req.body.id1;
+  let id2 = req.body.id2;
+  let id3 = req.body.id3;
+  let id4 = req.body.id4;
+  console.log(id4);
+  let idList = [id0, id1, id2, id3, id4];
+  let answer0 = req.body.yesAndNo0;
+  let answer1 = req.body.yesAndNo1;
+  let answer2 = req.body.yesAndNo2;
+  let answer3 = req.body.yesAndNo3;
+  let answer4 = req.body.yesAndNo4;
+  let answerList = [answer0, answer1, answer2, answer3, answer4];
+  console.log(id1);
+  console.log(answer1);
+  const db = await Connection.open(mongoUri, GUESSPIONAGE);
+  // update yes no counters here
+  let question;
+  let yes;
+  let no;
+  let newPercent;
+  answerList.forEach(async (answer, index) => {
+    if (idList[index]) {
+        if (answer == "Yes") {
+            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {yes: 1}})
+        }
+        else if (answer == "No"){
+            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {no: 1}})
+        } 
+        // update percentage here
+        question = await db.collection(QUESTIONS).find({id: parseInt(idList[index])}, {yes: 1, no: 1}).toArray();
+        yes = question[0].yes;
+        console.log("at second", yes);
+        no = question[0].no;
+        newPercent = Math.floor(yes/(yes+no) * 100);
+        console.log(newPercent);
+        db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
+        // update submission count and ready for Use
+    }
+  })
   console.log('posted');
   res.redirect('/game/');
 })
@@ -182,6 +228,7 @@ app.get('/game/', async (req, res) => {
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
     let answer5 = req.query.answer5;
+    let answers = [answer1, answer2, answer3, answer4, answer5];
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -195,7 +242,7 @@ app.get('/game/', async (req, res) => {
                 indexList.push(index);
             }
         }
-    
+
         // push ready for use questions into questions list
         if (questions[indexList[questionsCounter]].readyForUse == true) {
             questionsList.push(questions[indexList[questionsCounter]]);
@@ -208,10 +255,46 @@ app.get('/game/', async (req, res) => {
     if (!answer1) {
         return res.render('game.ejs', {questionsList});  
     } else {
-        // do score calculation here!
-        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5})
+        let score = 500;
+        let difference;
+        questionsList.forEach((question, index) => {
+            difference = Math.abs(question.percentage - answers[index]);
+            score -= difference;
+        })
+        score = Math.floor((score/500) * 100);
+        // update leaderboard, update high score for user
+        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5, score})
     }
 });
+
+app.post('/results/', async (req, res) => {
+    let { answer1, answer2, answer3, answer4, answer5 } = req.body;
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    // Render the results page with questions and answers
+    return res.render('results.ejs', { questionsList, answer1, answer2, answer3, answer4, answer5 });
+});
+
 
 /*app.post('/results/', async (req, res) => {
     // update leaderboard, display spot on leaderboard (ignoring users)
@@ -221,26 +304,6 @@ app.get('/game/', async (req, res) => {
 
 
 
-
-// two kinds of forms (GET and POST), both of which are pre-filled with data
-// from previous request, including a SELECT menu. Everything but radio buttons
-
-app.get('/form/', (req, res) => {
-    console.log('get form');
-    return res.render('form.ejs', {action: '/form/', data: req.query });
-});
-
-app.post('/form/', (req, res) => {
-    console.log('post form');
-    return res.render('form.ejs', {action: '/form/', data: req.body });
-});
-
-app.get('/staffList/', async (req, res) => {
-    const db = await Connection.open(mongoUri, WMDB);
-    let all = await db.collection(STAFF).find({}).sort({name: 1}).toArray();
-    console.log('len', all.length, 'first', all[0]);
-    return res.render('list.ejs', {listDescription: 'all staff', list: all});
-});
 
 // ================================================================
 // postlude
