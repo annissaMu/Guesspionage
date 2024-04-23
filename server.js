@@ -182,6 +182,8 @@ app.get('/baseQs/', async (req, res) => {
     return res.render('baseQs.ejs', {questions});
 })
 
+// add insert questions page here - dechen
+
 app.post('/baseQs/', async (req, res) => {
   let id0 = req.body.id0;
   let id1 = req.body.id1;
@@ -220,7 +222,7 @@ app.post('/baseQs/', async (req, res) => {
         newPercent = Math.floor(yes/(yes+no) * 100);
         console.log(newPercent);
         db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
-        // update submission count and ready for Use
+        // update submission count and ready for Use - annissa
     }
   })
   console.log('posted');
@@ -228,79 +230,61 @@ app.post('/baseQs/', async (req, res) => {
 })
 
 app.get('/game/', async (req, res) => {
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
+
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
+    // update usersplayed -- annissa
+
+    // if there's no submission render game, else render the game results
+        console.log(questionsList);
+        return res.render('game.ejs', {questionsList});  
+});
+
+app.post('/results/', async (req, res) => {
+    // let { answer0, answer1, answer2, answer3, answer4 } = req.body;
     let answer0 = req.query.answer0;
     let answer1 = req.query.answer1;
     let answer2 = req.query.answer2;
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
     let answers = [answer0, answer1, answer2, answer3, answer4];
-    const db = await Connection.open(mongoUri, 'guesspionage');
-    let questions = await db.collection('questions').find().toArray();
-    let questionsList = [];
-    let questionsCounter = 0;
-    let indexList = [];
-    while (questionsCounter < 5) {
-        // keep track of unique indexes
-        while (indexList.length == questionsCounter){
-            let index = Math.floor(Math.random() * questions.length);
-            if (!indexList.includes(index)){
-                indexList.push(index);
-            }
-        }
 
-        // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true) {
-            questionsList.push(questions[indexList[questionsCounter]]);
-            questionsCounter++;
-        } else {
-            indexList.pop();
-        }
-    }
-    // if there's no submission render game, else render the game results
-    if (!answer0) {
-        console.log(questionsList);
-        return res.render('game.ejs', {questionsList});  
-        
-    } else {
-        let score = 500;
-        let difference;
-        questionsList.forEach((question, index) => {
-            difference = Math.abs(question.percentage - answers[index]);
-            score -= difference;
-        })
-        score = Math.floor((score/500) * 100);
-        console.log(questionsList);
-        // update leaderboard, update high score for user
-        return res.render('results.ejs', {questionsList, answer0, answer1, answer2, answer3, answer4, score})
-    }
-});
+    // get same questions list somehow here - annissa
 
-app.post('/results/', async (req, res) => {
-    let { answer1, answer2, answer3, answer4, answer5 } = req.body;
-    const db = await Connection.open(mongoUri, 'guesspionage');
-    let questions = await db.collection('questions').find().toArray();
-    let questionsList = [];
-    let questionsCounter = 0;
-    let indexList = [];
-    while (questionsCounter < 5) {
-        // keep track of unique indexes
-        while (indexList.length == questionsCounter){
-            let index = Math.floor(Math.random() * questions.length);
-            if (!indexList.includes(index)){
-                indexList.push(index);
-            }
-        }
+    // calculate score
+    let score = 500;
+    let difference;
+    questionsList.forEach((question, index) => {
+        difference = Math.abs(question.percentage - answers[index]);
+        score -= difference;
+    })
+    score = Math.floor((score/500) * 100);
+    console.log(questionsList);
 
-        // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true) {
-            questionsList.push(questions[indexList[questionsCounter]]);
-            questionsCounter++;
-        } else {
-            indexList.pop();
-        }
-    }
+    // update leaderboard, update high score for user - dechen
+
+
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer1, answer2, answer3, answer4, answer5 });
+    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4 });
 });
 
 
