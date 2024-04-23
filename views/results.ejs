@@ -14,7 +14,7 @@
         <% for (let i = 0; i < questionsList.length; i++) { %>
             <li>
                 <strong>Question:</strong> <%= questionsList[i].question %><br>
-                <strong>User's Answer:</strong> <%= eval("answer" + (i+1)) %>%<br>
+                <strong>User's Answer:</strong> <%= eval("answer" + (i)) %>%<br>
                 <strong>Correct Answer:</strong><%= questionsList[i].percentage %>%
             </li>
         <% } %>

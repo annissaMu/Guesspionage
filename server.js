@@ -70,7 +70,12 @@ app.get('/', (req, res) => {
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
-    return res.render('login.ejs', {uid, visits});
+    return res.render('home.ejs', {loggedInUser: null});
+});
+
+// register page
+app.get('/register/', (req, res) => {
+    return res.render('login.ejs');
 });
 
 app.post("/register", async (req, res) => {
@@ -81,7 +86,7 @@ app.post("/register", async (req, res) => {
       const existingUser = await db.collection(LOGINS).findOne({username: username});
       if (existingUser) {
         req.flash('error', "Login already exists - please try logging in instead.");
-        return res.redirect('/')
+        return res.redirect('/register/')
       }
       const hash = await bcrypt.hash(password, ROUNDS);
       await db.collection(USERS).insertOne({
@@ -92,14 +97,14 @@ app.post("/register", async (req, res) => {
       req.flash('info', 'successfully joined and logged in as ' + username);
       req.session.username = username;
       req.session.logged_in = true;
-      return res.redirect('/home/');
+      return res.redirect('/register/')
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('/')
+      return res.redirect('/register/')
     }
   });
 
-  app.post("/login", async (req, res) => {
+  app.post("/", async (req, res) => {
     try {
       const username = req.body.username;
       const password = req.body.password;
@@ -108,22 +113,22 @@ app.post("/register", async (req, res) => {
       console.log('user', existingUser);
       if (!existingUser) {
         req.flash('error', "Username does not exist - try again.");
-       return res.redirect('/')
+       return res.redirect('/register/')
       }
       const match = await bcrypt.compare(password, existingUser.hash); 
       console.log('match', match);
       if (!match) {
           req.flash('error', "Username or password incorrect - try again.");
-          return res.redirect('/')
+          return res.redirect('/register/')
       }
       req.flash('info', 'successfully logged in as ' + username);
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.redirect('/home');
+      return res.render('home.ejs', {loggedInUser: username});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('/')
+      return res.redirect('/register/')
     }
   });
   
@@ -223,12 +228,12 @@ app.post('/baseQs/', async (req, res) => {
 })
 
 app.get('/game/', async (req, res) => {
+    let answer0 = req.query.answer0;
     let answer1 = req.query.answer1;
     let answer2 = req.query.answer2;
     let answer3 = req.query.answer3;
     let answer4 = req.query.answer4;
-    let answer5 = req.query.answer5;
-    let answers = [answer1, answer2, answer3, answer4, answer5];
+    let answers = [answer0, answer1, answer2, answer3, answer4];
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -252,8 +257,10 @@ app.get('/game/', async (req, res) => {
         }
     }
     // if there's no submission render game, else render the game results
-    if (!answer1) {
+    if (!answer0) {
+        console.log(questionsList);
         return res.render('game.ejs', {questionsList});  
+        
     } else {
         let score = 500;
         let difference;
@@ -262,8 +269,9 @@ app.get('/game/', async (req, res) => {
             score -= difference;
         })
         score = Math.floor((score/500) * 100);
+        console.log(questionsList);
         // update leaderboard, update high score for user
-        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5, score})
+        return res.render('results.ejs', {questionsList, answer0, answer1, answer2, answer3, answer4, score})
     }
 });
 

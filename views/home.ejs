@@ -9,16 +9,27 @@
 </head>
 <body>
     <h1>Guesspionage</h1>
+    <% 
+    let buttonRef; 
+
+    if (loggedInUser) {
+        buttonRef = "/baseQs/"
+    } else {
+        buttonRef = "/register/"
+    }
+    %>
+
     <div class="container">
-        <a href="/baseQs/">
+        <a href="<%= buttonRef %>">
             <button class="playGame"></button>
         </a>
     </div>
     <h3>To Start The Game Click The Button Below </h3>
 
-    <div class="logout-container">
-        <form class="LOut" action="/logout" method="POST"> 
-            <button type="submit" value="Logout" class="logout" data-target="/baseQs.ejs"></button>
+    
+    <div class="login-container"> 
+        <form action="/register">
+            <button>Login</button>
         </form>
     </div>
 
