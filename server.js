@@ -70,12 +70,7 @@ app.get('/', (req, res) => {
     visits++;
     req.session.visits = visits;
     console.log('uid', uid);
-    return res.render('home.ejs', {loggedInUser: null});
-});
-
-// register page
-app.get('/register/', (req, res) => {
-    return res.render('login.ejs');
+    return res.render('login.ejs', {uid, visits});
 });
 
 app.post("/register", async (req, res) => {
@@ -83,10 +78,10 @@ app.post("/register", async (req, res) => {
       const username = req.body.username;
       const password = req.body.password;
       const db = await Connection.open(mongoUri, GUESSPIONAGE);
-      const existingUser = await db.collection(LOGINS).findOne({username: username});
+      const existingUser = await db.collection(USERS).findOne({username: username});
       if (existingUser) {
         req.flash('error', "Login already exists - please try logging in instead.");
-        return res.redirect('/register/')
+        return res.redirect('/')
       }
       const hash = await bcrypt.hash(password, ROUNDS);
       await db.collection(USERS).insertOne({
@@ -97,14 +92,14 @@ app.post("/register", async (req, res) => {
       req.flash('info', 'successfully joined and logged in as ' + username);
       req.session.username = username;
       req.session.logged_in = true;
-      return res.redirect('/register/')
+      return res.redirect('/home');
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('/register/')
+      return res.redirect('/')
     }
   });
 
-  app.post("/", async (req, res) => {
+  app.post("/login", async (req, res) => {
     try {
       const username = req.body.username;
       const password = req.body.password;
@@ -113,58 +108,24 @@ app.post("/register", async (req, res) => {
       console.log('user', existingUser);
       if (!existingUser) {
         req.flash('error', "Username does not exist - try again.");
-       return res.redirect('/register/')
+       return res.redirect('/')
       }
       const match = await bcrypt.compare(password, existingUser.hash); 
       console.log('match', match);
       if (!match) {
           req.flash('error', "Username or password incorrect - try again.");
-          return res.redirect('/register/')
+          return res.redirect('/')
       }
       req.flash('info', 'successfully logged in as ' + username);
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.render('home.ejs', {loggedInUser: username});
+      return res.redirect('/home');
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
-      return res.redirect('/register/')
+      return res.redirect('/')
     }
   });
-  
-  
-
-// shows how logins might work by setting a value in the session
-// This is a conventional, non-Ajax, login, so it redirects to main page 
-/*app.post('/set-uid/', (req, res) => {
-    console.log('in set-uid');
-    req.session.uid = req.body.uid;
-    req.session.logged_in = true;
-    res.redirect('/');
-});
-
-// shows how logins might work via Ajax
-app.post('/set-uid-ajax/', (req, res) => {
-    console.log(Object.keys(req.body));
-    console.log(req.body);
-    let uid = req.body.uid;
-    if(!uid) {
-        res.send({error: 'no uid'}, 400);
-        return;
-    }
-    req.session.uid = req.body.uid;
-    req.session.logged_in = true;
-    console.log('logged in via ajax as ', req.body.uid);
-    res.send({error: false});
-});
-
-// conventional non-Ajax logout, so redirects
-app.post('/logout/', (req, res) => {
-    console.log('in logout');
-    req.session.uid = false;
-    req.session.logged_in = false;
-    res.redirect('/');
-});*/
 
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
@@ -182,7 +143,6 @@ app.get('/baseQs/', async (req, res) => {
     return res.render('baseQs.ejs', {questions});
 })
 
-// add insert questions page here - dechen
 
 app.post('/baseQs/', async (req, res) => {
   let id0 = req.body.id0;
@@ -222,7 +182,7 @@ app.post('/baseQs/', async (req, res) => {
         newPercent = Math.floor(yes/(yes+no) * 100);
         console.log(newPercent);
         db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
-        // update submission count and ready for Use - annissa
+        // update submission count and ready for Use
     }
   })
   console.log('posted');
@@ -230,6 +190,12 @@ app.post('/baseQs/', async (req, res) => {
 })
 
 app.get('/game/', async (req, res) => {
+    let answer1 = req.query.answer1;
+    let answer2 = req.query.answer2;
+    let answer3 = req.query.answer3;
+    let answer4 = req.query.answer4;
+    let answer5 = req.query.answer5;
+    let answers = [answer1, answer2, answer3, answer4, answer5];
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection('questions').find().toArray();
     let questionsList = [];
@@ -252,39 +218,48 @@ app.get('/game/', async (req, res) => {
             indexList.pop();
         }
     }
-    // update usersplayed -- annissa
-
     // if there's no submission render game, else render the game results
-        console.log(questionsList);
+    if (!answer1) {
         return res.render('game.ejs', {questionsList});  
+    } else {
+        let score = 500;
+        let difference;
+        questionsList.forEach((question, index) => {
+            difference = Math.abs(question.percentage - answers[index]);
+            score -= difference;
+        })
+        score = Math.floor((score/500) * 100);
+        // update leaderboard, update high score for user
+        return res.render('results.ejs', {questionsList, answer1, answer2, answer3, answer4, answer5, score})
+    }
 });
 
 app.post('/results/', async (req, res) => {
-    // let { answer0, answer1, answer2, answer3, answer4 } = req.body;
-    let answer0 = req.query.answer0;
-    let answer1 = req.query.answer1;
-    let answer2 = req.query.answer2;
-    let answer3 = req.query.answer3;
-    let answer4 = req.query.answer4;
-    let answers = [answer0, answer1, answer2, answer3, answer4];
+    let { answer1, answer2, answer3, answer4, answer5 } = req.body;
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection('questions').find().toArray();
+    let questionsList = [];
+    let questionsCounter = 0;
+    let indexList = [];
+    while (questionsCounter < 5) {
+        // keep track of unique indexes
+        while (indexList.length == questionsCounter){
+            let index = Math.floor(Math.random() * questions.length);
+            if (!indexList.includes(index)){
+                indexList.push(index);
+            }
+        }
 
-    // get same questions list somehow here - annissa
-
-    // calculate score
-    let score = 500;
-    let difference;
-    questionsList.forEach((question, index) => {
-        difference = Math.abs(question.percentage - answers[index]);
-        score -= difference;
-    })
-    score = Math.floor((score/500) * 100);
-    console.log(questionsList);
-
-    // update leaderboard, update high score for user - dechen
-
-
+        // push ready for use questions into questions list
+        if (questions[indexList[questionsCounter]].readyForUse == true) {
+            questionsList.push(questions[indexList[questionsCounter]]);
+            questionsCounter++;
+        } else {
+            indexList.pop();
+        }
+    }
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4 });
+    return res.render('results.ejs', { questionsList, answer1, answer2, answer3, answer4, answer5 });
 });
 
 
