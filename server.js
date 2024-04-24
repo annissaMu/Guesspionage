@@ -197,7 +197,7 @@ app.post('/baseQs/', async (req, res) => {
 
 app.get('/game/', async (req, res) => {
     const db = await Connection.open(mongoUri, 'guesspionage');
-    let questions = await db.collection('questions').find().toArray();
+    let questions = await db.collection(QUESTIONS).find().toArray();
     let questionsList = [];
     let questionsCounter = 0;
     let indexList = [];
@@ -221,36 +221,47 @@ app.get('/game/', async (req, res) => {
     // update usersplayed -- annissa
 
     // if there's no submission render game, else render the game results
-        console.log(questionsList);
+        console.log("game:", questionsList);
         return res.render('game.ejs', {questionsList});  
 });
 
 app.post('/results/', async (req, res) => {
-    // let { answer0, answer1, answer2, answer3, answer4 } = req.body;
-    let answer0 = req.query.answer0;
-    let answer1 = req.query.answer1;
-    let answer2 = req.query.answer2;
-    let answer3 = req.query.answer3;
-    let answer4 = req.query.answer4;
+    let { answer0, answer1, answer2, answer3, answer4, id0, id1, id2, id3, id4 } = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
-
-    // get same questions list somehow here - annissa
-
+    let ids = [id0, id1, id2, id3, id4];
+    let questionsList = [];
+    
+    // get original questionsList again
+    const db = await Connection.open(mongoUri, 'guesspionage');
+    let questions = await db.collection(QUESTIONS).find().toArray();
+    ids.forEach((id, index) => {
+        let i=0;
+        while(questionsList.length == index) {
+            console.log(questions[i]);
+            if (questions[i].id == id) {
+                questionsList.push(questions[i]);
+            }
+            i++;
+        }
+        i++;
+    })
+   
     // calculate score
     let score = 500;
     let difference;
-    questionsList.forEach((question, index) => {
+    await questionsList.forEach(async (question, index) => {
         difference = Math.abs(question.percentage - answers[index]);
         score -= difference;
     })
     score = Math.floor((score/500) * 100);
-    console.log(questionsList);
+    
 
     // update leaderboard, update high score for user - dechen
 
 
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4 });
+    console.log("results", questionsList)
+    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score });
 });
 
 
