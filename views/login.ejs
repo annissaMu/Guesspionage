@@ -12,6 +12,16 @@
 
   <h1>Guesspionage</h1>
 
+  <% if (messages.error) { %>
+    <div id="errors">
+        <ul>
+            <% messages.error.forEach( msg => {%>
+            <li><%= msg %></li>
+            <% }) %>
+        </ul>  
+    </div>
+    <% } %>
+
   <h2>Register:</h2>
   <p>
     <form action="/register" method="POST">
