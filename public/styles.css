@@ -43,7 +43,7 @@ border-bottom: 75px solid transparent;
   cursor: pointer;
 }
 
-.LOut {
+.logout-container {
   position: fixed;
   right: 10px;
   top: 5px;

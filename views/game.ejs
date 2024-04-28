@@ -24,7 +24,7 @@
             <h2>What percentage of people... <%= question.question %></h2>
         
             <p><label>Percentage: <input name=<%= name %> value="00">%</label></p>
-            <label><input type="hidden" name="<%= id %>" value="<%= question.id %>"></label>
+            <input type="hidden" name="<%= id %>" value="<%= question.id %>">
         </div>
         <% i++ %>
       <% }); %>

@@ -64,12 +64,8 @@ bcrypt = require ("bcrypt");
 const ROUNDS = 15;
 
 // HOMEPAGE HERE
+//lands the user to the home page
 app.get('/', (req, res) => {
-    let uid = req.session.uid || 'unknown';
-    let visits = req.session.visits || 0;
-    visits++;
-    req.session.visits = visits;
-    console.log('uid', uid);
     return res.render('home.ejs', {loggedInUser: null});
 });
 
@@ -78,6 +74,9 @@ app.get('/register/', (req, res) => {
     return res.render('login.ejs');
 });
 
+/* Retrieves the values input by a user when they create a new account
+and checks against the databse, adding them if no such username exists.
+If successful, they are asked to log in to play the game */
 app.post("/register/", async (req, res) => {
     try {
       const username = req.body.username;
@@ -102,7 +101,10 @@ app.post("/register/", async (req, res) => {
     }
   });
 
-  app.post("/", async (req, res) => {
+/* Retrieves the values input by a user when they login to their account
+and checks against the databse. If no such username exists, they are prompted 
+to register.If successful, they redirected to the home page to play the game */
+app.post("/", async (req, res) => {
     try {
       const username = req.body.username;
       const password = req.body.password;
@@ -130,6 +132,9 @@ app.post("/register/", async (req, res) => {
     }
   });
 
+/* Scott: The code to process the 5 base questions is tedious and
+repetitive. Will it always be exactly 5? Maybe find some systematic,
+abstract coding technique.*/
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);

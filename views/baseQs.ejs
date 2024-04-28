@@ -10,20 +10,28 @@
 <body>
     <h1>Guesspionage</h1>
     <p>To start the game, answer the following questions first</p>
-    <p>Do you...</p>
     <form method="POST" action="/baseQs/" id="baseQs">
-        <ol>
-            <% questions.forEach((question, index) => {%>
-                <% const name = "yesAndNo" + index %>
-                <% const hiddenName = "id" + index %>
-                <li><%= question.question %></li>
-                <label><input type="radio" name="<%= name %>" value="Yes" required= "required">Yes </label>
-                <label><input type="radio" name="<%= name %>" value="No" required="required">No</label>
-                <label><input type="hidden" name="<%= hiddenName %>" value="<%= question.id %>"></label>
-                <p></p>
-            <% }) %>
-        </ol>
-        <p><button  type="submit" value="base">Start Game</button></p>
-    </form>
-
-        
+        <fieldset>
+            <legend></legend>
+            <ol>
+                <% questions.forEach((question, index) => {%>
+                    <% const name = "yesAndNo" + index %>
+                    <% const hiddenName = "id" + index %>
+                    <% const yesId = "Yes" + index % + "Option" %>
+                    <% const noId = "No" + index % + "Option" %>
+                    <li><%= question.question %></li>
+                    <label>
+                        <input type="radio" name="<%= name %>" value="Yes" required="required" id="<%= yesId %>">
+                        Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="<%= name %>" value="No" required="required" id="<%= noId %>">
+                        No
+                    </label>
+                    <input type="hidden" name="<%= hiddenName %>" value="<%= question.id %>">
+                    <p></p>
+                <% }) %>
+            </ol>
+        </fieldset>
+        <p><button type="submit" value="base">Start Game</button></p>
+    </form>    
