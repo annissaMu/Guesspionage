@@ -156,33 +156,24 @@ abstract coding technique.*/
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
-    const user = req.session.username;
-    //we will add a filter on how many submissions each question has
-    const questions = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
+    const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
+    const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true}).toArray();
     let questionsList = [];
     let i = 0;
-    var BreakException = {};
     
-    questions.forEach((question) => {
-        if (!question.userAnswered.includes(user)){
-            questionsList.push(question);
-        }
-        
-        if (questionsList.length == 5) {
-            throw BreakException;
-        }
-    })
-
-    /*
-    while (questions.length!=5 && i<questionsList.length) {
-        if (questionsList[i].readyForUse == false) {
-            questions.push(questionsList[i]);
-        }
-        i++;
-    }
-    */
-
-    if (questions.length == 0 ){
+    if (notReadyForUse.length>0) {
+        while (questionsList.length!=5 && i<notReadyForUse.length) {
+            questionsList.push(notReadyForUse[i]);
+            i++;
+            }
+    } else {
+        while (questionsList.length!=5 && i<readyForUse.length) {
+            questionsList.push(readyForUse[i]);
+            i++;
+            }
+    } 
+   
+    if (questionsList.length == 0 ){
         res.redirect('/game/'); // why does this not work
     } else {
         return res.render('baseQs.ejs', {questions});
@@ -227,13 +218,15 @@ async function updatePercentage(db, id, answer, user) {
     const updateField = answer === "Yes" ? "yes" : "no";
     await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
 
-    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1 });
+    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1, submissions: 1 });
     const yes = question.yes;
     const no = question.no;
     const newPercent = Math.floor(yes / (yes + no) * 100);
 
     await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent }, $push: {userAnswered: user}, $inc: {submissions: 1}});
-    await db.collection(QUESTIONS).updateMany({ submissions: 5 }, { $set: {readyForUse: true} });
+    if (question.submissions == 5) {
+        await db.collection(QUESTIONS).updateOne({ id }, { $set: { readyForUse: true }});
+    }
 }
 
 app.get('/game/', async (req, res) => {
