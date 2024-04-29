@@ -183,43 +183,47 @@ app.get('/baseQs/', async (req, res) => {
 // add insert questions page here - dechen
 
 app.post('/baseQs/', async (req, res) => {
-  let id0 = req.body.id0;
-  let id1 = req.body.id1;
-  let id2 = req.body.id2;
-  let id3 = req.body.id3;
-  let id4 = req.body.id4;
-  let idList = [id0, id1, id2, id3, id4];
-  let answer0 = req.body.yesAndNo0;
-  let answer1 = req.body.yesAndNo1;
-  let answer2 = req.body.yesAndNo2;
-  let answer3 = req.body.yesAndNo3;
-  let answer4 = req.body.yesAndNo4;
-  let answerList = [answer0, answer1, answer2, answer3, answer4];
-  const db = await Connection.open(mongoUri, GUESSPIONAGE);
-  // update yes no counters 
-  let question;
-  let yes;
-  let no;
-  let newPercent;
-  answerList.forEach(async (answer, index) => {
-    if (idList[index]) {
-        if (answer == "Yes") {
-            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {yes: 1}})
-        }
-        else if (answer == "No"){
-            db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {no: 1}})
-        } 
-        // update percentage 
-        question = await db.collection(QUESTIONS).find({id: parseInt(idList[index])}, {yes: 1, no: 1}).toArray();
-        yes = question[0].yes;
-        no = question[0].no;
-        newPercent = Math.floor(yes/(yes+no) * 100);
-        db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
-        // update submission count and ready for Use - annissa
+    // Extract IDs and answers from the request body
+    const idList = [];
+    const answerList = [];
+    for (let i = 0; i < 5; i++) {
+        idList.push(req.body[`id${i}`]);
+        answerList.push(req.body[`yesAndNo${i}`]);
     }
-  })
-  res.redirect('/game/');
-})
+
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    try {
+        // Update yes/no counters and percentages
+        for (let i = 0; i < idList.length; i++) {
+            const id = parseInt(idList[i]);
+            const answer = answerList[i];
+
+            if (id && (answer === "Yes" || answer === "No")) {
+                await updatePercentage(db, id, answer);
+            }
+        }
+    } catch (error) {
+        console.error("Error updating questions:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+
+    console.log('posted');
+    res.redirect('/game/');
+});
+
+// Function to update yes/no counters and percentage
+//parameters: database, question id, user answer
+async function updatePercentage(db, id, answer) {
+    const updateField = answer === "Yes" ? "yes" : "no";
+    await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
+
+    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1 });
+    const yes = question.yes;
+    const no = question.no;
+    const newPercent = Math.floor(yes / (yes + no) * 100);
+
+    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent } });
+}
 
 app.get('/game/', async (req, res) => {
     const db = await Connection.open(mongoUri, 'guesspionage');
