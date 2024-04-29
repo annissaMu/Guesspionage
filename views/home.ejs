@@ -30,13 +30,18 @@
             <button class="playGame"></button>
         </a>
     </div>
-    <h3>Welcome <%= loggedInUser %>!</h3>
+    <% if (loggedInUser) {%>
+    <h4>Welcome <%= loggedInUser %>!</h4>
+    <%} %>
     <h4>To Start The Game Click The Button Below </h4>
 
     
     <div class="login-container"> 
         <form action="<%= loginButton %>" method="GET">
             <button><%= loginButtonText %></button>
+        </form>
+        <form action="/insert/" method="GET">
+            <button>Insert Question</button>
         </form>
     </div>
 

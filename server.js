@@ -139,6 +139,17 @@ app.post("/", async (req, res) => {
     }
   });
 
+  app.get('/insert/', (req, res) => {
+    res.render('insertQs.ejs');
+  })
+
+  app.post('/insert/', (req, res) => {
+    let { question, answer } = req.body;
+    console.log(question);
+    console.log(answer);
+    res.redirect('/');
+  })
+
 /* Scott: The code to process the 5 base questions is tedious and
 repetitive. Will it always be exactly 5? Maybe find some systematic,
 abstract coding technique.*/
@@ -161,7 +172,6 @@ app.get('/baseQs/', async (req, res) => {
             throw BreakException;
         }
     })
-    console.log('base questions', questionsList);
 
     /*
     while (questions.length!=5 && i<questionsList.length) {
@@ -190,6 +200,7 @@ app.post('/baseQs/', async (req, res) => {
         idList.push(req.body[`id${i}`]);
         answerList.push(req.body[`yesAndNo${i}`]);
     }
+    let user = req.session.username;
 
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     try {
@@ -199,7 +210,7 @@ app.post('/baseQs/', async (req, res) => {
             const answer = answerList[i];
 
             if (id && (answer === "Yes" || answer === "No")) {
-                await updatePercentage(db, id, answer);
+                await updatePercentage(db, id, answer, user);
             }
         }
     } catch (error) {
@@ -207,13 +218,12 @@ app.post('/baseQs/', async (req, res) => {
         return res.status(500).send("Internal Server Error");
     }
 
-    console.log('posted');
     res.redirect('/game/');
 });
 
 // Function to update yes/no counters and percentage
 //parameters: database, question id, user answer
-async function updatePercentage(db, id, answer) {
+async function updatePercentage(db, id, answer, user) {
     const updateField = answer === "Yes" ? "yes" : "no";
     await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
 
@@ -222,7 +232,8 @@ async function updatePercentage(db, id, answer) {
     const no = question.no;
     const newPercent = Math.floor(yes / (yes + no) * 100);
 
-    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent } });
+    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent }, $push: {userAnswered: user}, $inc: {submissions: 1}});
+    await db.collection(QUESTIONS).updateMany({ submissions: 5 }, { $set: {readyForUse: true} });
 }
 
 app.get('/game/', async (req, res) => {
@@ -233,6 +244,8 @@ app.get('/game/', async (req, res) => {
     let indexList = [];
     let user = req.session.username;
     
+    //throw error if there is not enough questions available to user
+
     while (questionsCounter < 5) {
         // keep track of unique indexes
         while (indexList.length == questionsCounter){
@@ -251,10 +264,7 @@ app.get('/game/', async (req, res) => {
         }
     }
     
-
-    // if there's no submission render game, else render the game results
-        console.log("game:", questionsList);
-        return res.render('game.ejs', {questionsList});  
+    return res.render('game.ejs', {questionsList});  
 });
 
 app.post('/results/', async (req, res) => {
@@ -270,7 +280,6 @@ app.post('/results/', async (req, res) => {
     ids.forEach((id, index) => {
         let i=0;
         while(questionsList.length == index) {
-            console.log(questions[i]);
             if (questions[i].id == id) {
                 questionsList.push(questions[i]);
             }
