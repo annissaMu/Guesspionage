@@ -101,6 +101,13 @@ app.post("/register/", async (req, res) => {
     }
   });
 
+/* logs out user */
+  app.get('/logout/', (req, res) => {
+    req.session.username = null;
+    req.session.logged_in = false;
+    return res.redirect('/register/');
+});
+
 /* Retrieves the values input by a user when they login to their account
 and checks against the databse. If no such username exists, they are prompted 
 to register.If successful, they redirected to the home page to play the game */
@@ -138,17 +145,39 @@ abstract coding technique.*/
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    const user = req.session.username;
     //we will add a filter on how many submissions each question has
-    const questionsList = await db.collection(QUESTIONS).find().toArray();
-    let questions = [];
+    const questions = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
+    let questionsList = [];
     let i = 0;
+    var BreakException = {};
+    
+    questions.forEach((question) => {
+        if (!question.userAnswered.includes(user)){
+            questionsList.push(question);
+        }
+        
+        if (questionsList.length == 5) {
+            throw BreakException;
+        }
+    })
+    console.log('base questions', questionsList);
+
+    /*
     while (questions.length!=5 && i<questionsList.length) {
         if (questionsList[i].readyForUse == false) {
             questions.push(questionsList[i]);
         }
         i++;
     }
-    return res.render('baseQs.ejs', {questions});
+    */
+
+    if (questions.length == 0 ){
+        res.redirect('/game/'); // why does this not work
+    } else {
+        return res.render('baseQs.ejs', {questions});
+    }
+    
 })
 
 // add insert questions page here - dechen
@@ -159,7 +188,6 @@ app.post('/baseQs/', async (req, res) => {
   let id2 = req.body.id2;
   let id3 = req.body.id3;
   let id4 = req.body.id4;
-  console.log(id4);
   let idList = [id0, id1, id2, id3, id4];
   let answer0 = req.body.yesAndNo0;
   let answer1 = req.body.yesAndNo1;
@@ -167,10 +195,8 @@ app.post('/baseQs/', async (req, res) => {
   let answer3 = req.body.yesAndNo3;
   let answer4 = req.body.yesAndNo4;
   let answerList = [answer0, answer1, answer2, answer3, answer4];
-  console.log(id1);
-  console.log(answer1);
   const db = await Connection.open(mongoUri, GUESSPIONAGE);
-  // update yes no counters here
+  // update yes no counters 
   let question;
   let yes;
   let no;
@@ -183,18 +209,15 @@ app.post('/baseQs/', async (req, res) => {
         else if (answer == "No"){
             db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$inc: {no: 1}})
         } 
-        // update percentage here
+        // update percentage 
         question = await db.collection(QUESTIONS).find({id: parseInt(idList[index])}, {yes: 1, no: 1}).toArray();
         yes = question[0].yes;
-        console.log("at second", yes);
         no = question[0].no;
         newPercent = Math.floor(yes/(yes+no) * 100);
-        console.log(newPercent);
         db.collection(QUESTIONS).updateOne({id: parseInt(idList[index])}, {$set:{percent: newPercent}});
         // update submission count and ready for Use - annissa
     }
   })
-  console.log('posted');
   res.redirect('/game/');
 })
 
@@ -204,6 +227,8 @@ app.get('/game/', async (req, res) => {
     let questionsList = [];
     let questionsCounter = 0;
     let indexList = [];
+    let user = req.session.username;
+    
     while (questionsCounter < 5) {
         // keep track of unique indexes
         while (indexList.length == questionsCounter){
@@ -214,14 +239,14 @@ app.get('/game/', async (req, res) => {
         }
 
         // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true) {
+        if (questions[indexList[questionsCounter]].readyForUse == true && !questions[indexList[questionsCounter]].usersPlayed.includes(user)) {
             questionsList.push(questions[indexList[questionsCounter]]);
             questionsCounter++;
         } else {
             indexList.pop();
         }
     }
-    // update usersplayed -- annissa
+    
 
     // if there's no submission render game, else render the game results
         console.log("game:", questionsList);
@@ -232,6 +257,7 @@ app.post('/results/', async (req, res) => {
     let { answer0, answer1, answer2, answer3, answer4, id0, id1, id2, id3, id4 } = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
     let ids = [id0, id1, id2, id3, id4];
+    let user = req.session.username;
     let questionsList = [];
     
     // get original questionsList again
@@ -248,6 +274,11 @@ app.post('/results/', async (req, res) => {
         }
         i++;
     })
+
+    // update usersPlayed
+    ids.forEach( async (id) => {
+        await db.collection(QUESTIONS).updateOne({id: parseInt(id)}, { $push: { usersPlayed: user }});
+    })
    
     // calculate score
     let score = 500;
@@ -262,7 +293,6 @@ app.post('/results/', async (req, res) => {
 
 
     // Render the results page with questions and answers
-    console.log("results", questionsList)
     return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score });
 });
 

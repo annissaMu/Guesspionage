@@ -43,10 +43,12 @@ border-bottom: 75px solid transparent;
   cursor: pointer;
 }
 
-.logout-container {
-  position: fixed;
-  right: 10px;
-  top: 5px;
-  width: 20;
-  height: 10;
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
