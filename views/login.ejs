@@ -22,6 +22,14 @@
     </div>
     <% } %>
 
+  <% if (messages.info) { %>
+    <div id="info">
+      <% messages.info.forEach( msg => {%>
+        <p><%= msg %></p>
+        <% }) %>
+    </div>
+    <% } %>
+
   <h2>Register:</h2>
   <p>
     <form action="/register" method="POST">

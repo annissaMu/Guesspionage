@@ -16,18 +16,18 @@
         buttonRef = "/baseQs/"
     } else {
         buttonRef = "/register/"
-    }
-    %>
+    }%>
 
     <div class="container">
         <a href="<%= buttonRef %>">
             <button class="playGame"></button>
         </a>
     </div>
-    <h3>To Start The Game Click The Button Below </h3>
+    <h3>Welcome <%= loggedInUser %>!</h3>
+    <h4>To Start The Game Click The Button Below </h4>
 
     
-    <div class="login-container"> 
+    <div class="logout-container"> 
         <form action="/register">
             <button>Logout</button>
         </form>
