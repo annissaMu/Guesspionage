@@ -139,6 +139,7 @@ app.post("/", async (req, res) => {
     }
   });
 
+  // add insert questions page here - dechen
   app.get('/insert/', (req, res) => {
     res.render('insertQs.ejs');
   })
@@ -158,30 +159,33 @@ app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
     const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true}).toArray();
+    let user = req.session.username;
     let questionsList = [];
     let i = 0;
     
     if (notReadyForUse.length>0) {
         while (questionsList.length!=5 && i<notReadyForUse.length) {
-            questionsList.push(notReadyForUse[i]);
+            if (!notReadyForUse[i].userAnswered.includes(user)){
+                questionsList.push(notReadyForUse[i]);
+            }
             i++;
             }
     } else {
         while (questionsList.length!=5 && i<readyForUse.length) {
-            questionsList.push(readyForUse[i]);
+            if (!readyForUse[i].userAnswered.includes(user)){
+                questionsList.push(readyForUse[i]);
+            }
             i++;
             }
     } 
    
     if (questionsList.length == 0 ){
-        res.redirect('/game/'); // why does this not work
+        res.redirect('/game/');
     } else {
-        return res.render('baseQs.ejs', {questions});
+        return res.render('baseQs.ejs', {questionsList});
     }
     
 })
-
-// add insert questions page here - dechen
 
 app.post('/baseQs/', async (req, res) => {
     // Extract IDs and answers from the request body
@@ -215,6 +219,7 @@ app.post('/baseQs/', async (req, res) => {
 // Function to update yes/no counters and percentage
 //parameters: database, question id, user answer
 async function updatePercentage(db, id, answer, user) {
+    console.log("incrementing", id);
     const updateField = answer === "Yes" ? "yes" : "no";
     await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
 
@@ -224,6 +229,11 @@ async function updatePercentage(db, id, answer, user) {
     const newPercent = Math.floor(yes / (yes + no) * 100);
 
     await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent }, $push: {userAnswered: user}, $inc: {submissions: 1}});
+    await updateReadyForUse(db, id);
+}
+
+async function updateReadyForUse(db, id) {
+    const question = await db.collection(QUESTIONS).findOne({ id }, { submissions: 1 });
     if (question.submissions == 5) {
         await db.collection(QUESTIONS).updateOne({ id }, { $set: { readyForUse: true }});
     }
