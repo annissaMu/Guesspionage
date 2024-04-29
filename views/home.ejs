@@ -11,25 +11,37 @@
     <h1>Guesspionage</h1>
     <% 
     let buttonRef; 
+    let loginButton
+    let loginButtonText;
 
     if (loggedInUser) {
         buttonRef = "/baseQs/"
+        loginButton = "/logout/"
+        loginButtonText = "Logout"
     } else {
         buttonRef = "/register/"
-    }%>
+        loginButton = "/register/"
+        loginButtonText = "Login"
+    }
+    %>
 
     <div class="container">
         <a href="<%= buttonRef %>">
             <button class="playGame"></button>
         </a>
     </div>
-    <h3>Welcome <%= loggedInUser %>!</h3>
+    <% if (loggedInUser) {%>
+    <h4>Welcome <%= loggedInUser %>!</h4>
+    <%} %>
     <h4>To Start The Game Click The Button Below </h4>
 
     
-    <div class="logout-container"> 
-        <form action="/register">
-            <button>Logout</button>
+    <div class="login-container"> 
+        <form action="<%= loginButton %>" method="GET">
+            <button><%= loginButtonText %></button>
+        </form>
+        <form action="/insert/" method="GET">
+            <button>Insert Question</button>
         </form>
     </div>
 

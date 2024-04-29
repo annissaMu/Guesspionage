@@ -101,6 +101,13 @@ app.post("/register/", async (req, res) => {
     }
   });
 
+/* logs out user */
+  app.get('/logout/', (req, res) => {
+    req.session.username = null;
+    req.session.logged_in = false;
+    return res.redirect('/register/');
+});
+
 /* Retrieves the values input by a user when they login to their account
 and checks against the databse. If no such username exists, they are prompted 
 to register.If successful, they redirected to the home page to play the game */
@@ -132,26 +139,53 @@ app.post("/", async (req, res) => {
     }
   });
 
+  // add insert questions page here - dechen
+  app.get('/insert/', (req, res) => {
+    res.render('insertQs.ejs');
+  })
+
+  app.post('/insert/', (req, res) => {
+    let { question, answer } = req.body;
+    console.log(question);
+    console.log(answer);
+    res.redirect('/');
+  })
+
 /* Scott: The code to process the 5 base questions is tedious and
 repetitive. Will it always be exactly 5? Maybe find some systematic,
 abstract coding technique.*/
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
-    //we will add a filter on how many submissions each question has
-    const questionsList = await db.collection(QUESTIONS).find().toArray();
-    let questions = [];
+    const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
+    const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true}).toArray();
+    let user = req.session.username;
+    let questionsList = [];
     let i = 0;
-    while (questions.length!=5 && i<questionsList.length) {
-        if (questionsList[i].readyForUse == false) {
-            questions.push(questionsList[i]);
-        }
-        i++;
+    
+    if (notReadyForUse.length>0) {
+        while (questionsList.length!=5 && i<notReadyForUse.length) {
+            if (!notReadyForUse[i].userAnswered.includes(user)){
+                questionsList.push(notReadyForUse[i]);
+            }
+            i++;
+            }
+    } else {
+        while (questionsList.length!=5 && i<readyForUse.length) {
+            if (!readyForUse[i].userAnswered.includes(user)){
+                questionsList.push(readyForUse[i]);
+            }
+            i++;
+            }
+    } 
+   
+    if (questionsList.length == 0 ){
+        res.redirect('/game/');
+    } else {
+        return res.render('baseQs.ejs', {questionsList});
     }
-    return res.render('baseQs.ejs', {questions});
+    
 })
-
-// add insert questions page here - dechen
 
 app.post('/baseQs/', async (req, res) => {
     // Extract IDs and answers from the request body
@@ -161,6 +195,7 @@ app.post('/baseQs/', async (req, res) => {
         idList.push(req.body[`id${i}`]);
         answerList.push(req.body[`yesAndNo${i}`]);
     }
+    let user = req.session.username;
 
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     try {
@@ -170,7 +205,7 @@ app.post('/baseQs/', async (req, res) => {
             const answer = answerList[i];
 
             if (id && (answer === "Yes" || answer === "No")) {
-                await updatePercentage(db, id, answer);
+                await updatePercentage(db, id, answer, user);
             }
         }
     } catch (error) {
@@ -178,22 +213,30 @@ app.post('/baseQs/', async (req, res) => {
         return res.status(500).send("Internal Server Error");
     }
 
-    console.log('posted');
     res.redirect('/game/');
 });
 
 // Function to update yes/no counters and percentage
 //parameters: database, question id, user answer
-async function updatePercentage(db, id, answer) {
+async function updatePercentage(db, id, answer, user) {
+    console.log("incrementing", id);
     const updateField = answer === "Yes" ? "yes" : "no";
     await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
 
-    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1 });
+    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1, submissions: 1 });
     const yes = question.yes;
     const no = question.no;
     const newPercent = Math.floor(yes / (yes + no) * 100);
 
-    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent } });
+    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent }, $push: {userAnswered: user}, $inc: {submissions: 1}});
+    await updateReadyForUse(db, id);
+}
+
+async function updateReadyForUse(db, id) {
+    const question = await db.collection(QUESTIONS).findOne({ id }, { submissions: 1 });
+    if (question.submissions == 5) {
+        await db.collection(QUESTIONS).updateOne({ id }, { $set: { readyForUse: true }});
+    }
 }
 
 app.get('/game/', async (req, res) => {
@@ -202,6 +245,10 @@ app.get('/game/', async (req, res) => {
     let questionsList = [];
     let questionsCounter = 0;
     let indexList = [];
+    let user = req.session.username;
+    
+    //throw error if there is not enough questions available to user
+
     while (questionsCounter < 5) {
         // keep track of unique indexes
         while (indexList.length == questionsCounter){
@@ -212,24 +259,22 @@ app.get('/game/', async (req, res) => {
         }
 
         // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true) {
+        if (questions[indexList[questionsCounter]].readyForUse == true && !questions[indexList[questionsCounter]].usersPlayed.includes(user)) {
             questionsList.push(questions[indexList[questionsCounter]]);
             questionsCounter++;
         } else {
             indexList.pop();
         }
     }
-    // update usersplayed -- annissa
-
-    // if there's no submission render game, else render the game results
-        console.log("game:", questionsList);
-        return res.render('game.ejs', {questionsList});  
+    
+    return res.render('game.ejs', {questionsList});  
 });
 
 app.post('/results/', async (req, res) => {
     let { answer0, answer1, answer2, answer3, answer4, id0, id1, id2, id3, id4 } = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
     let ids = [id0, id1, id2, id3, id4];
+    let user = req.session.username;
     let questionsList = [];
     
     // get original questionsList again
@@ -238,13 +283,17 @@ app.post('/results/', async (req, res) => {
     ids.forEach((id, index) => {
         let i=0;
         while(questionsList.length == index) {
-            console.log(questions[i]);
             if (questions[i].id == id) {
                 questionsList.push(questions[i]);
             }
             i++;
         }
         i++;
+    })
+
+    // update usersPlayed
+    ids.forEach( async (id) => {
+        await db.collection(QUESTIONS).updateOne({id: parseInt(id)}, { $push: { usersPlayed: user }});
     })
    
     // calculate score
@@ -260,7 +309,6 @@ app.post('/results/', async (req, res) => {
 
 
     // Render the results page with questions and answers
-    console.log("results", questionsList)
     return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score });
 });
 
