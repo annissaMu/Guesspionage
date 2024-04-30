@@ -94,7 +94,7 @@ app.post("/register/", async (req, res) => {
           hash: hash
       });
       console.log('successfully joined', username, password, hash);
-      req.flash('info', 'successfully joined. Please login');
+      req.flash('info', 'Successfully registered. Please login');
       return res.render('login.ejs');
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
@@ -129,7 +129,7 @@ app.post("/", async (req, res) => {
           req.flash('error', "Username or password incorrect - try again.");
           return res.redirect('/register/')
       }
-      req.flash('info', 'successfully logged in as ' + username);
+      req.flash('info', 'Successfully logged in as ' + username);
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
@@ -145,7 +145,8 @@ app.post("/", async (req, res) => {
     let { question, answer } = req.body;
     let readyForUse = answer ? true : false;
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
-    let getId = await db.collection(QUESTIONS).find({}, {sort: {id: 1}}).toArray()
+    let getId = await db.collection(QUESTIONS).find({}, 
+        {sort: {id: 1}}).toArray()
     getId = getId[getId.length-1].id+1;
     const obj = {
             id: getId,
@@ -168,8 +169,10 @@ abstract coding technique.*/
 //why do some have a double escape?
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
-    const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false}).toArray();
-    const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true}).toArray();
+    const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false})
+    .toArray();
+    const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true})
+    .toArray();
     let user = req.session.username;
     let questionsList = [];
     let i = 0;
@@ -232,21 +235,26 @@ app.post('/baseQs/', async (req, res) => {
 async function updatePercentage(db, id, answer, user) {
     console.log("incrementing", id);
     const updateField = answer === "Yes" ? "yes" : "no";
-    await db.collection(QUESTIONS).updateOne({ id }, { $inc: { [updateField]: 1 } });
+    await db.collection(QUESTIONS).updateOne({id}, {$inc: {[updateField]:1}});
 
-    const question = await db.collection(QUESTIONS).findOne({ id }, { yes: 1, no: 1, submissions: 1 });
+    const question = await db.collection(QUESTIONS).findOne({ id }, 
+        { yes: 1, no: 1, submissions: 1 });
     const yes = question.yes;
     const no = question.no;
     const newPercent = Math.floor(yes / (yes + no) * 100);
 
-    await db.collection(QUESTIONS).updateOne({ id }, { $set: { percent: newPercent }, $push: {userAnswered: user}, $inc: {submissions: 1}});
+    await db.collection(QUESTIONS).updateOne({ id }, 
+        { $set: { percent: newPercent }, 
+        $push: {userAnswered: user}, $inc: {submissions: 1}});
     await updateReadyForUse(db, id);
 }
 
 async function updateReadyForUse(db, id) {
-    const question = await db.collection(QUESTIONS).findOne({ id }, { submissions: 1 });
+    const question = await db.collection(QUESTIONS).findOne({ id }, 
+        { submissions: 1 });
     if (question.submissions == 5) {
-        await db.collection(QUESTIONS).updateOne({ id }, { $set: { readyForUse: true }});
+        await db.collection(QUESTIONS).updateOne({ id }, 
+            { $set: { readyForUse: true }});
     }
 }
 
@@ -270,7 +278,8 @@ app.get('/game/', async (req, res) => {
         }
 
         // push ready for use questions into questions list
-        if (questions[indexList[questionsCounter]].readyForUse == true && !questions[indexList[questionsCounter]].usersPlayed.includes(user)) {
+        if (questions[indexList[questionsCounter]].readyForUse == true 
+            && !questions[indexList[questionsCounter]].usersPlayed.includes(user)) {
             questionsList.push(questions[indexList[questionsCounter]]);
             questionsCounter++;
         } else {
@@ -282,7 +291,8 @@ app.get('/game/', async (req, res) => {
 });
 
 app.post('/results/', async (req, res) => {
-    let { answer0, answer1, answer2, answer3, answer4, id0, id1, id2, id3, id4 } = req.body;
+    let {answer0, answer1, answer2, answer3, answer4, 
+        id0, id1, id2, id3, id4} = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
     let ids = [id0, id1, id2, id3, id4];
     let user = req.session.username;
@@ -304,7 +314,8 @@ app.post('/results/', async (req, res) => {
 
     // update usersPlayed
     ids.forEach( async (id) => {
-        await db.collection(QUESTIONS).updateOne({id: parseInt(id)}, { $push: { usersPlayed: user }});
+        await db.collection(QUESTIONS).updateOne({id: parseInt(id)}, 
+        { $push: { usersPlayed: user }});
     })
    
     // calculate score
@@ -321,7 +332,8 @@ app.post('/results/', async (req, res) => {
     let currentUser = await userCollection.findOne({ username: user });
 
     if (!currentUser.topscore || score > currentUser.topscore) {
-        await userCollection.updateOne({ username: user }, { $set: { topscore: score }});
+        await userCollection.updateOne({ username: user }, 
+            { $set: { topscore: score }});
     }
     let leaderboardData = await userCollection.find()
                             .sort({ topscore: -1 })
@@ -329,7 +341,9 @@ app.post('/results/', async (req, res) => {
     
     
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score, leaderboard: leaderboardData });
+    return res.render('results.ejs', {questionsList, answer0, 
+        answer1, answer2, answer3, answer4, score, 
+        leaderboard: leaderboardData });
 });
 
 app.post('/logout', (req,res) => {
@@ -343,16 +357,6 @@ app.post('/logout', (req,res) => {
       return res.redirect('/');
     }
   });
-
-
-/*app.post('/results/', async (req, res) => {
-    // update leaderboard, display spot on leaderboard (ignoring users)
-})
-    return res.render('index.ejs', {uid, visits});
-});*/
-
-
-
 
 // ================================================================
 // postlude
