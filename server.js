@@ -320,11 +320,11 @@ app.post('/results/', async (req, res) => {
     let userCollection = await db.collection('users');
     let currentUser = await userCollection.findOne({ username: user });
 
-    if (!currentUser.highScore || score > currentUser.highScore) {
-        await userCollection.updateOne({ username: user }, { $set: { highScore: score }});
+    if (!currentUser.topscore || score > currentUser.topscore) {
+        await userCollection.updateOne({ username: user }, { $set: { topscore: score }});
     }
     let leaderboardData = await userCollection.find()
-                            .sort({ highScore: -1 })
+                            .sort({ topscore: -1 })
                             .limit(5).toArray();
     
     
