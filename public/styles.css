@@ -15,7 +15,7 @@ h1 {
   font-weight: bold;
 }
 
-h3, h4 {
+h3, h4, h5 {
   text-align: center;
   color: rgb(117, 10, 114);
   font-style: italic;
@@ -49,15 +49,8 @@ h3, h4 {
   cursor: pointer;
 }
 
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 80%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 12px;
+button, #start {
+  border-radius: 5px;
   color: white;
   padding: 0.5em 1.2em;
   text-align: center;
@@ -68,15 +61,16 @@ h3, h4 {
   margin-bottom: 4px;
   transition-duration: 0.4s;
   cursor: pointer;
+  border-radius: 12px;
   transition: border-color 0.25s;
-  background-color: purple;
+  background-color: thistle;
   font-family: inherit;
   font-weight: 500;
 }
 
 /* these styles are for the two different kinds of flashed messages. */
 
-#errors {
+#errors, #info {
   color: red;
   font-size: 1em;
   font-style: italic;
@@ -99,6 +93,39 @@ margin: 0;
 
 }
 
+#baseQs {
+border: 5px solid;
+margin: auto;
+width: 50%;
+padding: 10px;
+justify-content: center;
+}
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  color: white;
+  padding: 0.5em 1.2em;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 15px;
+  margin: 4px 2px;
+  margin-bottom: 4px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  background-color: antiquewhite;
+  font-family: inherit;
+  font-weight: 500;
+}
+
 /* [type=submit] {
 border-radius: 5px;
 padding: 0.5em 1.2em;
@@ -110,11 +137,3 @@ background-color: thistle;
 cursor: pointer;
 transition: border-color 0.25s;
 } */
-
-#baseQs {
-border: 5px solid;
-margin: auto;
-width: 50%;
-padding: 10px;
-justify-content: center;
-}
