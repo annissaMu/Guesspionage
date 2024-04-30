@@ -90,6 +90,7 @@ app.post("/register/", async (req, res) => {
       const hash = await bcrypt.hash(password, ROUNDS);
       await db.collection(USERS).insertOne({
           username: username,
+          topscore: 0,
           hash: hash
       });
       console.log('successfully joined', username, password, hash);
@@ -139,16 +140,15 @@ app.post("/", async (req, res) => {
     }
   });
 
-  // add insert questions page here - dechen
-  app.get('/insert/', (req, res) => {
-    res.render('insertQs.ejs');
-  })
 
   app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
     let readyForUse = answer ? true : false;
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    let getId = await db.collection(QUESTIONS).find({}, {sort: {id: 1}}).toArray()
+    getId = getId[getId.length-1].id+1;
     const obj = {
-            id: 6,
+            id: getId,
             question: question,
             percentage: parseInt(answer),
             submissions: 0,
@@ -158,9 +158,8 @@ app.post("/", async (req, res) => {
             usersPlayed: [],
             readyForUse: readyForUse,
     }
-    const db = await Connection.open(mongoUri, GUESSPIONAGE);
     await db.collection(QUESTIONS).insertOne(obj);
-    res.redirect('/');
+    res.redirect('/')
   })
 
 /* Scott: The code to process the 5 base questions is tedious and
@@ -318,10 +317,19 @@ app.post('/results/', async (req, res) => {
     score = Math.floor((score/500) * 100);
 
     // update leaderboard, update high score for user - dechen
+    let userCollection = await db.collection('users');
+    let currentUser = await userCollection.findOne({ username: user });
 
-
+    if (!currentUser.topscore || score > currentUser.topscore) {
+        await userCollection.updateOne({ username: user }, { $set: { topscore: score }});
+    }
+    let leaderboardData = await userCollection.find()
+                            .sort({ topscore: -1 })
+                            .limit(5).toArray();
+    
+    
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score });
+    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score, leaderboard: leaderboardData });
 });
 
 app.post('/logout', (req,res) => {
