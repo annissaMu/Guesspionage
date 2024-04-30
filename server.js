@@ -148,11 +148,10 @@ app.post("/", async (req, res) => {
     let { question, answer } = req.body;
     let readyForUse = answer ? true : false;
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
-    let getId = db.collection(QUESTIONS).find({}, {sort: {id: 1}}).toArray()
-    getId = getId.pop().id;
-    console.log(getId);
+    let getId = await db.collection(QUESTIONS).find({}, {sort: {id: 1}}).toArray()
+    getId = getId[getId.length-1].id+1;
     const obj = {
-            id: getId+1,
+            id: getId,
             question: question,
             percentage: parseInt(answer),
             submissions: 0,
@@ -163,7 +162,7 @@ app.post("/", async (req, res) => {
             readyForUse: readyForUse,
     }
     await db.collection(QUESTIONS).insertOne(obj);
-    res.redirect('/');
+    res.redirect('/')
   })
 
 /* Scott: The code to process the 5 base questions is tedious and
