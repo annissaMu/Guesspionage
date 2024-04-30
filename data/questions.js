@@ -1,4 +1,5 @@
-[{
+[{	
+	// ready to play
 	id: 1,
 	question: 'own fancy soap?',
 	percentage: 40,
@@ -9,7 +10,7 @@
 	usersPlayed: ['fn101', 'sk106'],
 	readyForUse: true,
 },
-{
+{	// ready to play
 	id: 2,
 	question: 'has 8:30?',
 	percentage: 40,
@@ -20,7 +21,7 @@
 	usersPlayed: [],
 	readyForUse: true,
 },
-{
+{	// ready to play
 	id: 3,
 	question: 'has swam in Lake Waban?',
 	percentage: 40,
@@ -31,7 +32,7 @@
 	usersPlayed: ['fn101', 'sk106'],
 	readyForUse: true,
 },
-{
+{	
 	id: 4,
 	question: 'can cry on demand?',
 	percentage: 50,
@@ -79,7 +80,7 @@
 	readyForUse: false,
 },
 
-{
+{	// ready to play
 	id: 8,
 	question: 'like spicy food?',
 	percentage: 25,
@@ -91,7 +92,7 @@
 	readyForUse: true,
 },
 
-{
+{	// ready to play
 	id: 9,
 	question: 'experiences stress?',
 	percentage: 100,
