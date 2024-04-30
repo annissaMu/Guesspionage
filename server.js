@@ -144,10 +144,22 @@ app.post("/", async (req, res) => {
     res.render('insertQs.ejs');
   })
 
-  app.post('/insert/', (req, res) => {
+  app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
-    console.log(question);
-    console.log(answer);
+    let readyForUse = answer ? true : false;
+    const obj = {
+            id: 6,
+            question: question,
+            percentage: parseInt(answer),
+            submissions: 0,
+            yes: 0,
+            no: 0,
+            userAnswered: [],
+            usersPlayed: [],
+            readyForUse: readyForUse,
+    }
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    await db.collection(QUESTIONS).insertOne(obj);
     res.redirect('/');
   })
 
