@@ -144,8 +144,12 @@ app.post("/", async (req, res) => {
   app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
     let readyForUse = answer ? true : false;
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    let getId = db.collection(QUESTIONS).find({}, {sort: {id: 1}}).toArray()
+    getId = getId.pop().id;
+    console.log(getId);
     const obj = {
-            id: 6,
+            id: getId+1,
             question: question,
             percentage: parseInt(answer),
             submissions: 0,
@@ -155,7 +159,6 @@ app.post("/", async (req, res) => {
             usersPlayed: [],
             readyForUse: readyForUse,
     }
-    const db = await Connection.open(mongoUri, GUESSPIONAGE);
     await db.collection(QUESTIONS).insertOne(obj);
     res.redirect('/');
   })
