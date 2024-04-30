@@ -140,6 +140,9 @@ app.post("/", async (req, res) => {
     }
   });
 
+  app.get('/insert/', async(req, res) => {
+    res.render('insertQs.ejs')
+  })
 
   app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;

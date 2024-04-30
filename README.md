@@ -4,12 +4,15 @@ Team Members Annissa, Dechen, Fridah, and Jelimo
 
 ## Table of Contents
 1. [About](#about)
-2. [Features](#features)
-3. [Acknoledgements](#acknoledgements)
-4. [License](#license)
+2. [Getting Started](#getting-started)
+3. [Features](#features)
+4. [Acknoledgements](#acknoledgements)
+5. [License](#license)
 
 ## About
 Our final project is an attempt to recreate the populat Jackbox game 'Guesspionage', but tailored towards Wellesley College students. This project was created with software such as MongoDB and Node.js.
+
+## Getting Started
 
 ## Features
 Our project allows the user to:
