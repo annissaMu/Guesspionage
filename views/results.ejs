@@ -21,9 +21,27 @@
     </ul>
     <h2>Final Score: <%= score %>/100</h2>
 
-    <a href="/baseQs/">
+    <h1>Leaderboard</h1>
+    <% if (typeof leaderboard !== 'undefined' && leaderboard.length > 0) { %>
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>High Score</th>
+            </tr>
+            <% leaderboard.forEach(function(user, index) { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= user.username %></td>
+                    <td><%= user.highScore %></td>
+                </tr>
+            <% }); %>
+        </table>
+    <% } else { %>
+        <p>No games have been played yet.</p>
+    <% } %>
+<a href="/baseQs/">
         <button>Play Again</button>
-    </a>
-
+ </a>
 </body>
 </html>

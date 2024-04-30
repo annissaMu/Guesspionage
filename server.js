@@ -90,6 +90,7 @@ app.post("/register/", async (req, res) => {
       const hash = await bcrypt.hash(password, ROUNDS);
       await db.collection(USERS).insertOne({
           username: username,
+          topscore: 0,
           hash: hash
       });
       console.log('successfully joined', username, password, hash);
@@ -139,10 +140,6 @@ app.post("/", async (req, res) => {
     }
   });
 
-  // add insert questions page here - dechen
-  app.get('/insert/', (req, res) => {
-    res.render('insertQs.ejs');
-  })
 
   app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
@@ -320,10 +317,19 @@ app.post('/results/', async (req, res) => {
     score = Math.floor((score/500) * 100);
 
     // update leaderboard, update high score for user - dechen
+    let userCollection = await db.collection('users');
+    let currentUser = await userCollection.findOne({ username: user });
 
-
+    if (!currentUser.highScore || score > currentUser.highScore) {
+        await userCollection.updateOne({ username: user }, { $set: { highScore: score }});
+    }
+    let leaderboardData = await userCollection.find()
+                            .sort({ highScore: -1 })
+                            .limit(5).toArray();
+    
+    
     // Render the results page with questions and answers
-    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score });
+    return res.render('results.ejs', { questionsList, answer0, answer1, answer2, answer3, answer4, score, leaderboard: leaderboardData });
 });
 
 app.post('/logout', (req,res) => {
