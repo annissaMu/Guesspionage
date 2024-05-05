@@ -11,7 +11,25 @@
 <body>
 
   <h1>Guesspionage</h1>
-  <%- include("partials/flashes.ejs]") %>
+  <% if (messages.error) { %>
+    <div id="errors">
+        <ul>
+            <% messages.error.forEach( msg => {%>
+            <li><%= msg %></li>
+            <% }) %>
+        </ul>  
+    </div>
+    <% } %>
+
+  <% if (messages.info) { %>
+    <div id="info">
+      <ul>
+        <% messages.info.forEach( msg => {%>
+        <li><%= msg %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <% } %>
 
   <h2>Register:</h2>
   <p>
