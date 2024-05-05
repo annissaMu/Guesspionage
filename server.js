@@ -140,7 +140,12 @@ app.post("/", async (req, res) => {
     }
   });
 
+  /* renders insert questions page */
+  app.get('/insert/', async(req, res) => {
+    res.render('insertQs.ejs')
+  })
 
+  /* updates database with inserted question */
   app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
     let readyForUse = answer ? true : false;
@@ -163,10 +168,7 @@ app.post("/", async (req, res) => {
     res.redirect('/')
   })
 
-/* Scott: The code to process the 5 base questions is tedious and
-repetitive. Will it always be exactly 5? Maybe find some systematic,
-abstract coding technique.*/
-//why do some have a double escape?
+/* renders base questions page */
 app.get('/baseQs/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false})
@@ -201,6 +203,7 @@ app.get('/baseQs/', async (req, res) => {
     
 })
 
+/* updates database with new percentages and submissions count and use status */
 app.post('/baseQs/', async (req, res) => {
     // Extract IDs and answers from the request body
     const idList = [];
@@ -249,6 +252,7 @@ async function updatePercentage(db, id, answer, user) {
     await updateReadyForUse(db, id);
 }
 
+/* updates ready for use state for question */
 async function updateReadyForUse(db, id) {
     const question = await db.collection(QUESTIONS).findOne({ id }, 
         { submissions: 1 });
@@ -258,6 +262,7 @@ async function updateReadyForUse(db, id) {
     }
 }
 
+/* renders game page with 5 random questions */
 app.get('/game/', async (req, res) => {
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection(QUESTIONS).find().toArray();
@@ -290,6 +295,7 @@ app.get('/game/', async (req, res) => {
     return res.render('game.ejs', {questionsList});  
 });
 
+/* renders game results and leaderboard page and updates database with user's high score */
 app.post('/results/', async (req, res) => {
     let {answer0, answer1, answer2, answer3, answer4, 
         id0, id1, id2, id3, id4} = req.body;
@@ -346,6 +352,7 @@ app.post('/results/', async (req, res) => {
         leaderboard: leaderboardData });
 });
 
+/* logs out username */
 app.post('/logout', (req,res) => {
     if (req.session.username) {
       req.session.username = null;
