@@ -28,7 +28,7 @@
     <% if (loggedInUser) {%>
     <h4>Welcome <%= loggedInUser %>!</h4>
     <div>
-        <button class="playGame">Play Game</button> 
+        <button type = "submit" class = "playGame">Play Game</button> 
     </div>
     <%}%>
 
@@ -51,10 +51,8 @@
     </div>
 
     <script>
-        $('.playGame').on('click', function(event) {
-        event.preventDefault(); 
+        $('.playGame').on('click', function() { 
         const url = "/baseQs/";
-        $
-        location.href= url;
+        window.location.href = url;
         });
     </script>

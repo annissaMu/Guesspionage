@@ -105,13 +105,6 @@ app.post("/register/", async (req, res) => {
     }
   });
 
-/* logs out user */
-  app.get('/logout/', (req, res) => {
-    req.session.username = null;
-    req.session.logged_in = false;
-    return res.redirect('/register/');
-});
-
 /* Retrieves the values input by a user when they login to their account
 and checks against the databse. If no such username exists, they are prompted 
 to register.If successful, they redirected to the home page to play the game */
@@ -144,15 +137,23 @@ app.post("/", async (req, res) => {
   });
 
   /* renders insert questions page */
-  app.get('/insert/', async(req, res) => {
+app.get('/insert/', async(req, res) => {
     res.render('insertQs.ejs')
-  })
+})
 
   /* updates database with inserted question */
-  app.post('/insert/', async (req, res) => {
+app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
-    let readyForUse = answer ? true : false;
+
+    // check if the question already exists
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    const existingQuestion = await db.collection(QUESTIONS).findOne({ question });
+    if (existingQuestion) {
+        res.flash('error', 'Question already exists');
+        return;
+    }
+
+    let readyForUse = answer ? true : false;
     let getId = await db.collection(QUESTIONS).find({}, 
         {sort: {id: 1}}).toArray()
     getId = getId[getId.length-1].id+1;
@@ -172,17 +173,24 @@ app.post("/", async (req, res) => {
   })
 
 /* renders base questions page */
-app.get('/baseQs/', async (req, res) => {
+app.get('/baseQs/', requiresLogin, async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    //getting the questions
     const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false})
     .toArray();
     const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true})
     .toArray();
+    
     let user = req.session.username;
     let questionsList = [];
     let i = 0;
-    
-    if (notReadyForUse.length>0) {
+
+    // select the questions
+    let selected = notReadyForUse.length > 0 ? notReadyForUse : readyForUse;
+
+    // filter questions that the user hasn't answered
+    questionsList = userUnanswered(selected, user);
+    /* if (notReadyForUse.length>0) {
         while (questionsList.length!=5 && i<notReadyForUse.length) {
             if (!notReadyForUse[i].userAnswered.includes(user)){
                 questionsList.push(notReadyForUse[i]);
@@ -196,15 +204,21 @@ app.get('/baseQs/', async (req, res) => {
             }
             i++;
             }
-    } 
+    }  */
    
+    // redirect to game page if there aren't any questions
     if (questionsList.length == 0 ){
         res.redirect('/game/');
     } else {
-        return res.render('baseQs.ejs', {questionsList});
-    }
-    
+        // otherwise, render the questions
+        return res.render('baseQs.ejs', {username: req.session.username, questionsList});
+    }   
 })
+
+/* helper to filter out questions the user has not answered */
+function userUnanswered(questions, user) {
+    return questions.filter(question => !question.userAnswered.includes(user));
+}
 
 /* updates database with new percentages and submissions count and use status */
 app.post('/baseQs/', async (req, res) => {
@@ -232,7 +246,6 @@ app.post('/baseQs/', async (req, res) => {
         console.error("Error updating questions:", error);
         return res.status(500).send("Internal Server Error");
     }
-
     res.redirect('/game/');
 });
 
@@ -266,7 +279,7 @@ async function updateReadyForUse(db, id) {
 }
 
 /* renders game page with 5 random questions */
-app.get('/game/', async (req, res) => {
+app.get('/game/', requiresLogin, async (req, res) => {
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection(QUESTIONS).find().toArray();
     let questionsList = [];
@@ -295,11 +308,11 @@ app.get('/game/', async (req, res) => {
         }
     }
     
-    return res.render('game.ejs', {questionsList});  
+    return res.render('game.ejs', {username: req.session.username, questionsList});  
 });
 
 /* renders game results and leaderboard page and updates database with user's high score */
-app.post('/results/', async (req, res) => {
+app.post('/results/', requiresLogin, async (req, res) => {
     let {answer0, answer1, answer2, answer3, answer4, 
         id0, id1, id2, id3, id4} = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
@@ -349,10 +362,20 @@ app.post('/results/', async (req, res) => {
                             .limit(5).toArray();
     
     // Render the results page with questions and answers
-    return res.render('results.ejs', {questionsList, answer0, 
+    return res.render('results.ejs', {username: req.session.username, questionsList, answer0, 
         answer1, answer2, answer3, answer4, score, 
         leaderboard: leaderboardData });
 });
+
+function requiresLogin(req, res, next) {
+    if (!req.session.loggedIn) {
+        req.flash('error', 'This page requires you to be logged in - please do so.');
+        return res.redirect("/");
+    } else {
+        next();
+    }
+  }
+  
 
 /* logs out username */
 app.post('/logout', (req,res) => {
