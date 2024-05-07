@@ -94,8 +94,11 @@ app.post("/register/", async (req, res) => {
           hash: hash
       });
       console.log('successfully joined', username, password, hash);
-      req.flash('info', 'Successfully registered. Please login');
-      return res.render('login.ejs');
+      req.flash('info', 'Successfully registered!');
+      req.session.username = username;
+      req.session.logged_in = true;
+      console.log('login as', username);
+      return res.render('home.ejs', {loggedInUser: username});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
       return res.redirect('/register/')
@@ -344,7 +347,6 @@ app.post('/results/', async (req, res) => {
     let leaderboardData = await userCollection.find()
                             .sort({ topscore: -1 })
                             .limit(5).toArray();
-    
     
     // Render the results page with questions and answers
     return res.render('results.ejs', {questionsList, answer0, 

@@ -25,16 +25,21 @@
     }
     %>
 
-    <div class="container">
-        <a href="<%= buttonRef %>">
-            <button class="playGame"></button>
-        </a>
-    </div>
     <% if (loggedInUser) {%>
     <h4>Welcome <%= loggedInUser %>!</h4>
-    <%} %>
-    <h5>To Start The Game Click The Button Below </h5>
+    <div>
+        <button class="playGame">Play Game</button> 
+    </div>
+    <%}%>
 
+    <% if (!loggedInUser) {%>
+        <ul>
+            <li>In March 2024, four masterminds joined forces to craft a game specifically tailored for the Wellesley College community, by the community. </li>
+            <li>Wellesley students inhabit a unique bubble within the college community, where they similar experiences and everyday lives.</li>
+            <li>It's exciting to have a game curated with topics that you literally relate with in your daily life on the campus.</li>
+            <li><em>FOR WELLESLEY BY WELLESLEY</em></li>
+        </ul>
+    <%}%>
     
     <div class="login-container"> 
         <form action="<%= loginButton %>" method="GET">
@@ -46,9 +51,10 @@
     </div>
 
     <script>
-    $('.logout').on('click', function(event) {
+        $('.playGame').on('click', function(event) {
         event.preventDefault(); 
-        const url = $(this).data('target');
-        location.replace(url);
-    });
+        const url = "/baseQs/";
+        $
+        location.href= url;
+        });
     </script>

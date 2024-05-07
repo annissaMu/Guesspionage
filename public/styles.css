@@ -18,32 +18,43 @@ h3, h4, h5 {
   font-size: 2em;
 }
 
-.container {
+/* .container {
   width: 280px;
   height: 250px;
-  border-radius: 50%; /* Make it a circle */
-  background-color: rgb(18, 156, 156); /* Background color of the circle */
+  border-radius: 50%;
+  background-color: rgb(18, 156, 156);
   display: flex;
   align-items: center;
   justify-content: center;
   position: absolute;
-  top: 60%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
+} */
 
-.playGame {
-  width: 0;
-  height: 0;
-  border-top: 75px solid transparent;
-  border-left: 100px solid #740a78;
-  border-bottom: 75px solid transparent;
-  background-color: rgb(18, 156, 156);
-  align-items: center;
+ .playGame {
+  border-radius: 30px;
+  color: white;
+  padding: 1em 2.4em;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
   justify-content: center;
   align-items: center;
+  display: flex;
+  top: 55%;
+  left: 50%;
+  font-size: 40px;
+  margin: 30px 25px;
+  margin-bottom: 4px;
+  transition-duration: 0.4s;
   cursor: pointer;
-}
+  border-radius: 12px;
+  transition: border-color 0.25s;
+  background-color: rgb(18, 156, 156);;
+  font-family: inherit;
+  font-weight: 500;
+} 
 
 .login-container {
   display: flex;
