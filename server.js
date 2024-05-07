@@ -1,9 +1,11 @@
 // start app with 'npm run dev' in a terminal window
 // go to http://localhost:port/ to view your deployment!
-// every time you change something in server.js and save, your deployment will automatically reload
+/* every time you change something in server.js and save, 
+your deployment will automatically reload */
 
 // to exit, type 'ctrl + c', then press the enter key in a terminal window
-// if you're prompted with 'terminate batch job (y/n)?', type 'y', then press the enter key in the same terminal
+/* if you're prompted with 'terminate batch job (y/n)?', 
+type 'y', then press the enter key in the same terminal */
 
 // standard modules, loaded from node_modules
 const path = require('path');
@@ -84,7 +86,7 @@ app.post("/register/", async (req, res) => {
       const db = await Connection.open(mongoUri, GUESSPIONAGE);
       const existingUser = await db.collection(USERS).findOne({username: username});
       if (existingUser) {
-        req.flash('error', "Login already exists - please try logging in instead.");
+        req.flash('error', "Login already exists - try logging in instead.");
         return res.render('login.ejs');
       }
       const hash = await bcrypt.hash(password, ROUNDS);
@@ -180,7 +182,7 @@ app.get('/baseQs/', requiresLogin, async (req, res) => {
     .toArray();
     const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true})
     .toArray();
-    
+
     let user = req.session.username;
     let questionsList = [];
     let i = 0;
@@ -211,7 +213,8 @@ app.get('/baseQs/', requiresLogin, async (req, res) => {
         res.redirect('/game/');
     } else {
         // otherwise, render the questions
-        return res.render('baseQs.ejs', {username: req.session.username, questionsList});
+        return res.render('baseQs.ejs', {username: req.session.username, 
+            questionsList});
     }   
 })
 
@@ -300,7 +303,8 @@ app.get('/game/', requiresLogin, async (req, res) => {
 
         // push ready for use questions into questions list
         if (questions[indexList[questionsCounter]].readyForUse == true 
-            && !questions[indexList[questionsCounter]].usersPlayed.includes(user)) {
+            && !questions[indexList[questionsCounter]].usersPlayed
+            .includes(user)) {
             questionsList.push(questions[indexList[questionsCounter]]);
             questionsCounter++;
         } else {
@@ -308,10 +312,12 @@ app.get('/game/', requiresLogin, async (req, res) => {
         }
     }
     
-    return res.render('game.ejs', {username: req.session.username, questionsList});  
+    return res.render('game.ejs', {username: req.session.username, 
+        questionsList});  
 });
 
-/* renders game results and leaderboard page and updates database with user's high score */
+/* renders game results and leaderboard page and 
+updates database with user's high score */
 app.post('/results/', requiresLogin, async (req, res) => {
     let {answer0, answer1, answer2, answer3, answer4, 
         id0, id1, id2, id3, id4} = req.body;
@@ -362,14 +368,15 @@ app.post('/results/', requiresLogin, async (req, res) => {
                             .limit(5).toArray();
     
     // Render the results page with questions and answers
-    return res.render('results.ejs', {username: req.session.username, questionsList, answer0, 
+    return res.render('results.ejs', {username: req.session.username, 
+        questionsList, answer0, 
         answer1, answer2, answer3, answer4, score, 
         leaderboard: leaderboardData });
 });
 
 function requiresLogin(req, res, next) {
     if (!req.session.loggedIn) {
-        req.flash('error', 'This page requires you to be logged in - please do so.');
+        req.flash('error', 'This page requires you to be logged in.');
         return res.redirect("/");
     } else {
         next();
