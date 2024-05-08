@@ -28,17 +28,26 @@
     <% if (loggedInUser) {%>
     <h4>Welcome <%= loggedInUser %>!</h4>
     <div>
-        <button type = "submit" class = "playGame">Play Game</button> 
+        <a href = "<%= buttonRef %>">
+            <button class="playGame">Play Game</button>
+        </a>
     </div>
     <%}%>
 
     <% if (!loggedInUser) {%>
-        <ul>
-            <li>In March 2024, four masterminds joined forces to craft a game specifically tailored for the Wellesley College community, by the community. </li>
-            <li>Wellesley students inhabit a unique bubble within the college community, where they similar experiences and everyday lives.</li>
-            <li>It's exciting to have a game curated with topics that you literally relate with in your daily life on the campus.</li>
-            <li><em>FOR WELLESLEY BY WELLESLEY</em></li>
-        </ul>
+        <div id="intro">
+            <p>In March 2024, four masterminds joined forces to craft a game specifically tailored for the Wellesley College community, by the community. </p>
+            <p>Wellesley students inhabit a unique bubble within the college community, where they have similar experiences and everyday lives.</p>
+            <p>It's exciting to have a game curated with topics that you literally relate with in your daily life on the campus.</p>
+            <p>Everyday you learn something new here about Wellesley and share some laughter amongst the Wellesley community.</p>
+            <p>REMEMBER TO HAVE FUN AT IT!</p>
+            <p>
+
+            </p>
+            <p><strong> - FOR WELLESLEY BY WELLESLEY - </strong></p>
+        </div>
+           
+       
     <%}%>
     
     <div class="login-container"> 

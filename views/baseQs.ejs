@@ -10,7 +10,7 @@
     <h1>Guesspionage</h1>
     
     <form method="POST" action="/baseQs/" class="baseQs">
-        <p>To start the game, answer the following questions first</p>2
+        <p>To start the game, answer the following questions first</p>
         <fieldset>
             <legend></legend>
             <ol>
@@ -33,6 +33,7 @@
                 <% }) %>
             </ol>
         </fieldset>
+        <input type="hidden" name="redirect_url" value="/game/">
         <p><button type="submit" value="base" id="start">Start Game</button></p>
     </form>    
     <a href="/" class="homeB">

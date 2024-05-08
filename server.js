@@ -176,10 +176,13 @@ app.post('/insert/', async (req, res) => {
 
 /* renders base questions page */
 app.get('/baseQs/', requiresLogin, async (req, res) => {
+    console.log("opening database...");
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //getting the questions
+    console.log("database opened...");
     const notReadyForUse = await db.collection(QUESTIONS).find({readyForUse: false})
     .toArray();
+    
     const readyForUse = await db.collection(QUESTIONS).find({readyForUse: true})
     .toArray();
 
@@ -188,30 +191,18 @@ app.get('/baseQs/', requiresLogin, async (req, res) => {
     let i = 0;
 
     // select the questions
+    console.log("selecting questions");
     let selected = notReadyForUse.length > 0 ? notReadyForUse : readyForUse;
 
     // filter questions that the user hasn't answered
     questionsList = userUnanswered(selected, user);
-    /* if (notReadyForUse.length>0) {
-        while (questionsList.length!=5 && i<notReadyForUse.length) {
-            if (!notReadyForUse[i].userAnswered.includes(user)){
-                questionsList.push(notReadyForUse[i]);
-            }
-            i++;
-            }
-    } else {
-        while (questionsList.length!=5 && i<readyForUse.length) {
-            if (!readyForUse[i].userAnswered.includes(user)){
-                questionsList.push(readyForUse[i]);
-            }
-            i++;
-            }
-    }  */
-   
+
     // redirect to game page if there aren't any questions
     if (questionsList.length == 0 ){
+        console.log("no questions");
         res.redirect('/game/');
     } else {
+        console.log("some questions");
         // otherwise, render the questions
         return res.render('baseQs.ejs', {username: req.session.username, 
             questionsList});
@@ -219,6 +210,7 @@ app.get('/baseQs/', requiresLogin, async (req, res) => {
 })
 
 /* helper to filter out questions the user has not answered */
+// parameters: all questions, user logged in
 function userUnanswered(questions, user) {
     return questions.filter(question => !question.userAnswered.includes(user));
 }
@@ -311,14 +303,15 @@ app.get('/game/', requiresLogin, async (req, res) => {
             indexList.pop();
         }
     }
-    
+    console.log("finishing game get");
     return res.render('game.ejs', {username: req.session.username, 
         questionsList});  
 });
 
 /* renders game results and leaderboard page and 
 updates database with user's high score */
-app.post('/results/', requiresLogin, async (req, res) => {
+app.post('/results/', async (req, res) => {
+    console.log("calculate results");
     let {answer0, answer1, answer2, answer3, answer4, 
         id0, id1, id2, id3, id4} = req.body;
     let answers = [answer0, answer1, answer2, answer3, answer4];
@@ -383,9 +376,8 @@ function requiresLogin(req, res, next) {
     }
   }
   
-
 /* logs out username */
-app.post('/logout', (req,res) => {
+app.get('/logout', (req,res) => {
     if (req.session.username) {
       req.session.username = null;
       req.session.loggedIn = false;
