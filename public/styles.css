@@ -38,12 +38,8 @@ h3, h4, h5 {
   padding: 1em 2.4em;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
-  justify-content: center;
-  align-items: center;
-  display: flex;
+  margin: auto;
   top: 55%;
-  left: 50%;
   font-size: 50px;
   margin: 30px 25px;
   margin-bottom: 4px;
@@ -162,4 +158,12 @@ body {
   font-size: 1em;
   width: 50%;
   justify-content: center;
+}
+
+table {
+  text-align: center;
+  border: 5px solid;
+  width: 500px;
+  height: 500px;
+  margin: auto;
 }

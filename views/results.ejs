@@ -8,25 +8,24 @@
 </head>
 <body>
     <h1>Game Results</h1>
-    <ul>
+    
         <% questionsList.forEach(function (question, index) { %>
-            <li>
-                <strong>Question:</strong> <%= question.question %><br>
-                <strong>User's Answer:</strong> <%= eval("answer" + index) %>%<br>
-                <strong>Correct Answer:</strong> <%= question.percentage %>%
-            </li>
+            <div class="game">
+            <h2>Question: <%= question.question %></h2>
+            <p><strong>User's Answer:</strong> <%= eval("answer" + index) %>%<br>
+            <strong>Correct Answer:</strong> <%= question.percentage %>%</p>
+            </div>
         <% }); %>
-    </ul>
-    <h2>Final Score: <%= score %>/100</h2>
+    
+    <h3>Final Score: <%= score %>/100</h3>
 
     <!-- button for navigating back to home page -->
-    <a href="/" style="text-decoration: none; color: inherit;">
-        <button>Home Page</button>
-    </a>
-
-    <a href="/baseQs/">
-        <button>Play Again</button>
-    </a>
+        <a href="/" >
+            <button>Home Page</button>
+        </a>
+        <a href="/baseQs/">
+            <button>Play Again</button>
+        </a>
 
     <!-- leaderboard table -->
     <h1>Leaderboard</h1>
