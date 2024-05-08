@@ -11,20 +11,32 @@
 <body>
 
   <h1>Insert Question</h1>
-  <h2>If you'd like to insert a question to the game use the form below.
+  <h2 class="questionSubmission">If you'd like to insert a question to the game use the form below.
     If you know the answer, please fill in the percentage. If not, leave it blank and we will
     gather the data for you.
   </h2>
-  
-    <form class="game"
+
+  <div class="form-container">
+    <form class= game
     method="POST"
     action="/insert/">
         <p><label>What percentage of people... <input type="text" name="question" required="required"></label></p>
         <p><label>Answer (if known): <input name="answer">%</label></p>
       <p><button type="submit">Submit</button></p>
     </form>
+  </div>
+
+    <h1>Questions in the Database so far...</h1>
+    <div class="questionsDisplayed">
+    <ul>
+      <% questions.forEach(function(q) { %>
+        <li>What percentage of people <strong><%= q.question %></strong></li>
+      <% }); %>
+    </ul>
+    </div>
 
     <!-- load local js -->
     <script src="/main.js"></script>
 </body>
 </html>
+

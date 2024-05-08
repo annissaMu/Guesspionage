@@ -140,7 +140,9 @@ app.post("/", async (req, res) => {
 
   /* renders insert questions page */
 app.get('/insert/', async(req, res) => {
-    res.render('insertQs.ejs')
+    const db = await Connection.open(mongoUri, GUESSPIONAGE);
+    const questions = await db.collection(QUESTIONS).find({ question }).toArray();
+    res.render('insertQs.ejs', { questions });
 })
 
   /* updates database with inserted question */
