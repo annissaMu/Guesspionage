@@ -175,7 +175,7 @@ app.post('/insert/', async (req, res) => {
   })
 
 /* renders base questions page */
-app.get('/baseQs/', requiresLogin, async (req, res) => {
+app.get('/baseQs/', async (req, res) => {
     console.log("opening database...");
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //getting the questions
@@ -274,7 +274,7 @@ async function updateReadyForUse(db, id) {
 }
 
 /* renders game page with 5 random questions */
-app.get('/game/', requiresLogin, async (req, res) => {
+app.get('/game/', async (req, res) => {
     const db = await Connection.open(mongoUri, 'guesspionage');
     let questions = await db.collection(QUESTIONS).find().toArray();
     let questionsList = [];
