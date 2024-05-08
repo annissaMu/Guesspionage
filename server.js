@@ -155,7 +155,8 @@ app.post('/insert/', async (req, res) => {
         return;
     }
 
-    let readyForUse = answer ? true : false;
+    let readyForUse = answer !== "" ? true : false;
+    console.log(readyForUse);
     let getId = await db.collection(QUESTIONS).find({}, 
         {sort: {id: 1}}).toArray()
     getId = getId[getId.length-1].id+1;
