@@ -47,11 +47,27 @@ h3, h4, h5 {
   cursor: pointer;
   border-radius: 12px;
   transition: border-color 0.25s;
-  background-color: rgb(18, 156, 156);;
+  background-color:antiquewhite;
   font-family: inherit;
   font-weight: 1000;
 } 
-
+#gameButton{
+  color: white;
+  padding: 2em;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 30px;
+  margin: 10px 30px;
+  margin-bottom: 10px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: border-color 0.25s;
+  background-color:purple;
+  font-family: inherit;
+  font-weight: 500;
+}
 .login-container {
   display: flex;
   align-items: center;

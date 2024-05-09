@@ -76,10 +76,20 @@ app.get('/register/', (req, res) => {
     return res.render('login.ejs');
 });
 
+
+function requiresLogin(req, res, next) {
+    if (!req.session.loggedIn) {
+      req.flash('error', 'This page requires you to be logged in - please do so.');
+      return res.redirect("/");
+    } else {
+        next();
+    }
+  }
+
 /* Retrieves the values input by a user when they create a new account
-and checks against the databse, adding them if no such username exists.
+and checks against the database, adding them if no such username exists.
 If successful, they are asked to log in to play the game */
-app.post("/register/", async (req, res) => {
+app.post("/register/",async (req, res) => {
     try {
       const username = req.body.username;
       const password = req.body.password;
@@ -100,7 +110,7 @@ app.post("/register/", async (req, res) => {
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.render('home.ejs', {loggedInUser: username});
+      return res.render('home.ejs', {loggedInUser: true});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
       return res.redirect('/register/')
@@ -131,7 +141,7 @@ app.post("/", async (req, res) => {
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.render('home.ejs', {loggedInUser: username});
+      return res.render('home.ejs', {loggedInUser: true});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
       return res.redirect('/register/')
@@ -187,7 +197,7 @@ app.post('/insert/', async (req, res) => {
   })
 
 /* renders base questions page */
-app.get('/baseQs/', async (req, res) => {
+app.get('/baseQs/', requiresLogin, async (req, res) => {
     console.log("opening database...");
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //getting the questions
@@ -219,12 +229,16 @@ app.get('/baseQs/', async (req, res) => {
         return res.render('baseQs.ejs', {username: req.session.username, 
             questionsList});
     }   
-})
+}
+
+)
 
 /* helper to filter out questions the user has not answered */
 // parameters: all questions, user logged in
 function userUnanswered(questions, user) {
     return questions.filter(question => !question.userAnswered.includes(user));
+
+
 }
 
 /* updates database with new percentages and submissions count and use status */
@@ -379,14 +393,10 @@ app.post('/results/', async (req, res) => {
         leaderboard: leaderboardData });
 });
 
-function requiresLogin(req, res, next) {
-    if (!req.session.loggedIn) {
-        req.flash('error', 'This page requires you to be logged in.');
-        return res.redirect("/");
-    } else {
-        next();
-    }
-  }
+
+  
+
+  
   
 /* logs out username */
 app.get('/logout', (req,res) => {
