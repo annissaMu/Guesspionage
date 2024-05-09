@@ -153,7 +153,7 @@ app.post('/insert/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     const existingQuestion = await db.collection(QUESTIONS).findOne({ question });
     if (existingQuestion) {
-        res.flash('error', 'Question already exists');
+        req.flash('error', 'Question already exists');
         return;
     }
 
