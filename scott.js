@@ -145,14 +145,6 @@ app.get('/insert/', async(req, res) => {
     res.render('insertQs.ejs', { questions });
 })
 
-async function incrCounter(db, key) {
-    // this will update the document and return the document after the update
-    let result = await db.collection('counter').findOneAndUpdate({collection: key},
-                                                 {$inc: {counter: 1}}, 
-                                                 {returnDocument: "after"});
-    return result.counter;
-}
-
   /* updates database with inserted question */
 app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
@@ -161,17 +153,17 @@ app.post('/insert/', async (req, res) => {
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     const existingQuestion = await db.collection(QUESTIONS).findOne({ question });
     if (existingQuestion) {
-        req.flash('error', 'Question already exists');
+        res.flash('error', 'Question already exists');
         return;
     }
 
     let readyForUse = answer !== "" ? true : false;
     console.log(readyForUse);
-    // let getId = await db.collection(QUESTIONS).find({}, 
-    //     {sort: {id: 1}}).toArray()
-    let newId = await incrCounter(db, 'questions');
+    let getId = await db.collection(QUESTIONS).find({}, 
+        {sort: {id: 1}}).toArray()
+    getId = getId[getId.length-1].id+1;
     const obj = {
-            id: newId,
+            id: getId,
             question: question,
             percentage: parseInt(answer),
             submissions: 0,
@@ -181,7 +173,6 @@ app.post('/insert/', async (req, res) => {
             usersPlayed: [],
             readyForUse: readyForUse,
     }
-    console.log(obj);
     await db.collection(QUESTIONS).insertOne(obj);
     res.redirect('/')
   })
