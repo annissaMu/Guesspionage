@@ -26,13 +26,12 @@
     %>
 
     <% if (loggedInUser) {%>
-    <h4>Welcome <%= loggedInUser %>!</h4>
-    <form class="playGame" >
-            <a href = "<%= buttonRef %>">
-                <button id="gameButton">Play Game</button>
-            </a>
+    <h2>Welcome <%= loggedInUser %>!</h2>
+    <form id="playGame" method="GET" action="/baseQs/" >
+        <a href = "<%= buttonRef %>">
+            <button class="playGame" type="submit">PLAY GAME</button>
+        </a>
     </form>
-    
     <%}%>
 
     <% if (!loggedInUser) {%>
@@ -61,7 +60,7 @@
     </div>
 
     <script>
-        $('#playGame').on('click', function() { 
+        $('.playGame').on('click', function() { 
         const url = "/baseQs/";
         window.location.href = url;
         });

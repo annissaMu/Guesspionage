@@ -110,7 +110,7 @@ app.post("/register/",async (req, res) => {
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.render('home.ejs', {loggedInUser: true});
+      return res.render('home.ejs', {loggedInUser: username});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
       return res.redirect('/register/')
@@ -141,7 +141,7 @@ app.post("/", async (req, res) => {
       req.session.username = username;
       req.session.logged_in = true;
       console.log('login as', username);
-      return res.render('home.ejs', {loggedInUser: true});
+      return res.render('home.ejs', {loggedInUser: username});
     } catch (error) {
       req.flash('error', `Form submission error: ${error}`);
       return res.redirect('/register/')
@@ -166,10 +166,12 @@ async function incrCounter(db, key) {
   /* updates database with inserted question */
 app.post('/insert/', async (req, res) => {
     let { question, answer } = req.body;
+    console.log(question);
 
     // check if the question already exists
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     const existingQuestion = await db.collection(QUESTIONS).findOne({ question });
+    console.log(existingQuestion);
     if (existingQuestion) {
         req.flash('error', 'Question already exists');
         return;
@@ -197,7 +199,7 @@ app.post('/insert/', async (req, res) => {
   })
 
 /* renders base questions page */
-app.get('/baseQs/', requiresLogin, async (req, res) => {
+app.get('/baseQs/', async (req, res) => {
     console.log("opening database...");
     const db = await Connection.open(mongoUri, GUESSPIONAGE);
     //getting the questions

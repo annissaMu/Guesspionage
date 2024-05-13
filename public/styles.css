@@ -1,6 +1,6 @@
 h1 { 
   text-align: center;
-  color: rgb(18, 156, 156);
+  color:purple;
   font-style: italic;
   font-size: 4em;
   display: block;
@@ -11,13 +11,29 @@ h1 {
   font-weight: bold;
 }
 
-h3, h4, h5 {
+h3, h5 {
   text-align: center;
   color: rgb(117, 10, 114);
   font-style: italic;
   font-size: 2em;
 }
+h2{
+  text-align: center;
+  color: navy;
+  font-style: italic;
+  font-size: 2em;
+}
+.reglog{
+  color: rgb(117, 10, 114);
+  font-size: 2em;
+  font-weight: bold;
+  text-align:left;
 
+}
+#credentials{
+  justify-content: center;
+  padding: 1em 2.4em;
+}
 /* .container {
   width: 280px;
   height: 250px;
@@ -32,7 +48,7 @@ h3, h4, h5 {
   transform: translate(-50%, -50%);
 } */
 
- .playGame {
+ #playGame {
   border-radius: 30px;
   color: white;
   padding: 1em 2.4em;
@@ -51,8 +67,8 @@ h3, h4, h5 {
   font-family: inherit;
   font-weight: 1000;
 } 
-#gameButton{
-  color: white;
+.playGame{
+  color: black;
   padding: 2em;
   text-align: center;
   text-decoration: none;
@@ -64,9 +80,12 @@ h3, h4, h5 {
   cursor: pointer;
   border-radius: 30px;
   transition: border-color 0.25s;
-  background-color:purple;
+  background-color:rgb(41, 186, 169);
   font-family: inherit;
   font-weight: 500;
+  align-items: center;
+  justify-content: center;
+ 
 }
 .login-container {
   display: flex;
@@ -107,7 +126,7 @@ button, #start {
   cursor: pointer;
   border-radius: 12px;
   transition: border-color 0.25s;
-  background-color: thistle;
+  background-color:purple;
   font-family: inherit;
   font-weight: 500;
 }
@@ -135,7 +154,7 @@ body {
 
 #intro{
   justify-content: center;
-  color: rgba(0, 4, 255, 0.894);
+  color: black;
   padding: 0.5em 1.2em;
   text-align: center;
   font-size: 15px;

@@ -8,46 +8,34 @@
 </head>
 <body>
     <h1>Guesspionage</h1>
-    <% if (messages.error) { %>
-        <div id="errors">
-            <ul>
-                <% messages.error.forEach( msg => {%>
-                <li><%= msg %></li>
-                <% }) %>
-            </ul>  
-        </div>
-        <% } %>
-
-        <%if (username){ %>
-        <form method="POST" action="/baseQs/" class="baseQs">
-            <p>To start the game, answer the following questions first</p>
-            <fieldset>
-                <legend></legend>
-                <ol>
-                    <% questionsList.forEach((question, index) => {%>
-                        <% const name = "yesAndNo" + index %>
-                        <% const hiddenName = "id" + index %>
-                        <% const yesId = "Yes" + index % + "Option" %>
-                        <% const noId = "No" + index % + "Option" %>
-                        <li>Are you part of the percentage of people that <%= question.question %></li>
-                        <label>
-                            <input type="radio" name="<%= name %>" value="Yes" required="required" id="<%= yesId %>">
-                            Yes
-                        </label>
-                        <label>
-                            <input type="radio" name="<%= name %>" value="No" required="required" id="<%= noId %>">
-                            No
-                        </label>
-                        <input type="hidden" name="<%= hiddenName %>" value="<%= question.id %>">
-                        <p></p>
-                    <% }) %>
-                </ol>
-            </fieldset>
-            <input type="hidden" name="redirect_url" value="/game/">
-            <p><button type="submit" value="base" id="start">Start Game</button></p>
-        </form>    
-        <% } %>
     
+    <form method="POST" action="/baseQs/" class="baseQs">
+        <p>To start the game, answer the following questions first</p>
+        <fieldset>
+            <legend></legend>
+            <ol>
+                <% questionsList.forEach((question, index) => {%>
+                    <% const name = "yesAndNo" + index %>
+                    <% const hiddenName = "id" + index %>
+                    <% const yesId = "Yes" + index % + "Option" %>
+                    <% const noId = "No" + index % + "Option" %>
+                    <li>Are you part of the percentage of people that <%= question.question %></li>
+                    <label>
+                        <input type="radio" name="<%= name %>" value="Yes" required="required" id="<%= yesId %>">
+                        Yes
+                    </label>
+                    <label>
+                        <input type="radio" name="<%= name %>" value="No" required="required" id="<%= noId %>">
+                        No
+                    </label>
+                    <input type="hidden" name="<%= hiddenName %>" value="<%= question.id %>">
+                    <p></p>
+                <% }) %>
+            </ol>
+        </fieldset>
+        <input type="hidden" name="redirect_url" value="/game/">
+        <p><button type="submit" value="base" id="start">Start Game</button></p>
+    </form>    
     <a href="/" class="homeB">
         <button>Home Page</button>
     </body>

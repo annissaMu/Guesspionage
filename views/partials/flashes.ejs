@@ -1,19 +1,19 @@
 <% if (messages.error) { %>
-    <div id="errors">
-        <ul>
-            <% messages.error.forEach( msg => {%>
-            <li><%= msg %></li>
-            <% }) %>
-        </ul>  
-    </div>
-    <% } %>
-
-  <% if (messages.info) { %>
-    <div id="info">
+  <div id="errors">
       <ul>
-        <% messages.info.forEach( msg => {%>
-        <li><%= msg %></li>
-        <% }) %>
-      </ul>
-    </div>
-    <% } %>
+          <% messages.error.forEach( msg => {%>
+          <li><%= msg %></li>
+          <% }) %>
+      </ul>  
+  </div>
+  <% } %>
+
+<% if (messages.info) { %>
+  <div id="info">
+    <ul>
+      <% messages.info.forEach( msg => {%>
+      <li><%= msg %></li>
+      <% }) %>
+    </ul>
+  </div>
+  <% } %>
